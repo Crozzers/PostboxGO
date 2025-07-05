@@ -16,5 +16,6 @@ enum class Monarch {
 @Serializable
 data class Postbox(
     val coords: Pair<Float, Float>,
-    val monarch: Monarch
+    val monarch: Monarch,
+    val dateRegistered: String
 )

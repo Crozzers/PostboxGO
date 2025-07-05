@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +105,7 @@ fun AddPostbox(callback: (p: Postbox) -> Unit) {
                     errorMessage = "Error: Latitude and Longitude must be numbers."
                     return@Button
                 }
-                callback(Postbox(coords, selectedMonarch))
+                callback(Postbox(coords, selectedMonarch, LocalDateTime.now().toString()))
             },
             modifier = Modifier.fillMaxWidth()
         ) {
