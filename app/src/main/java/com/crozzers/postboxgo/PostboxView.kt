@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -32,10 +31,14 @@ fun PostboxListScreen(postboxes: List<Postbox>, modifier: Modifier) {
 
 @Composable
 fun PostboxCard(postbox: Postbox) {
-    Card(Modifier
-        .height(100.dp)
-        .fillMaxWidth()) {
+    Card(
+        Modifier
+            .height(100.dp)
+            .fillMaxWidth()
+    ) {
         Column {
+            Text(text = "Name: ${postbox.name}")
+            Text(text = "Type: ${postbox.type}")
             Text(text = "Monarch: ${postbox.monarch}")
             Text(text = "Registered: ${postbox.dateRegistered}")
         }
