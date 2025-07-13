@@ -1,4 +1,4 @@
-package com.crozzers.postboxgo
+package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
 import android.content.Context
@@ -32,6 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.crozzers.postboxgo.DetailedPostboxInfo
+import com.crozzers.postboxgo.Monarch
+import com.crozzers.postboxgo.Postbox
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope

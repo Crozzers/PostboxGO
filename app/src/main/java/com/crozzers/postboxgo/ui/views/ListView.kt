@@ -1,4 +1,4 @@
-package com.crozzers.postboxgo
+package com.crozzers.postboxgo.ui.views
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,20 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.SaveFile
 
 @Composable
-fun PostboxListScreen(
-    saveFile: SaveFile,
-    modifier: Modifier,
+fun ListView(
+    postboxes: List<Postbox>,
     onItemClick: (postbox: Postbox) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        items(saveFile.getPostboxes()) { postbox ->
+        items(postboxes) { postbox ->
             PostboxCard(postbox, onItemClick)
         }
     }
@@ -51,3 +51,4 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
         }
     }
 }
+

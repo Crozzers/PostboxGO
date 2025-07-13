@@ -1,4 +1,4 @@
-package com.crozzers.postboxgo
+package com.crozzers.postboxgo.ui.views
 
 import android.content.Intent
 import android.content.res.Configuration
@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.SaveFile
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -45,7 +48,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun ViewPostbox(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit) {
+fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit) {
     var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
 
     val configuration = LocalConfiguration.current
@@ -62,7 +65,7 @@ fun ViewPostbox(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                     .padding(16.dp)
             ) {
                 PostboxDetails(postbox)
-                PostboxMap(postbox.coords, Modifier.height(500.dp))
+                PostboxMap(postbox.coords, Modifier.fillMaxHeight(0.75f))
                 ActionButtons(
                     postbox.coords
                 ) { state ->
