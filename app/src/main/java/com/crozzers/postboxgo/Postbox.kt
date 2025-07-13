@@ -18,14 +18,13 @@ enum class Monarch {
  */
 @Serializable
 data class Postbox(
+    val id: String,
     val coords: Pair<Float, Float>,
     val monarch: Monarch,
     val dateRegistered: String,
     val name: String,
     val type: String?,
 )
-
-
 
 // stuff we get from post office API
 

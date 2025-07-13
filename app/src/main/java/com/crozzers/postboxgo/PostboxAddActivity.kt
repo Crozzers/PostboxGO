@@ -36,17 +36,17 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
 import java.util.Locale
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
 fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbox) -> Unit) {
     var selectedPostbox by remember { mutableStateOf<DetailedPostboxInfo?>(null) }
@@ -156,6 +156,7 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
                 }
                 callback(
                     Postbox(
+                        Uuid.random().toString(),
                         Pair(
                             selectedPostbox!!.locationDetails.latitude,
                             selectedPostbox!!.locationDetails.longitude

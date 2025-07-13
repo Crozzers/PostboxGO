@@ -33,9 +33,19 @@ class SaveFile(private val context: Context) {
         return data.postboxes
     }
 
+    fun getPostbox(id: String): Postbox? {
+        return data.postboxes.find { it.id == id }
+    }
+
     fun addPostbox(postbox: Postbox) {
         data.postboxes.add(postbox)
         save()
+    }
+
+    fun removePostbox(postbox: Postbox) {
+        if (data.postboxes.remove(postbox)) {
+            save()
+        }
     }
 }
 
