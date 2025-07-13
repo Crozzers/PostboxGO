@@ -2,6 +2,7 @@ package com.crozzers.postboxgo
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,8 +20,11 @@ fun MenuBar(navController: NavController) {
             text = "PostboxGO", maxLines = 1, overflow = TextOverflow.Ellipsis
         )
     }, actions = {
+        IconButton(onClick = { navController.navigate(NavigationItem.Home.route) }) {
+            Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
+        }
         IconButton(onClick = {
-            navController.navigate("addPostbox")
+            navController.navigate(NavigationItem.AddPostbox.route)
         }) {
             Icon(
                 imageVector = Icons.Filled.Add, contentDescription = "Register Postbox"
