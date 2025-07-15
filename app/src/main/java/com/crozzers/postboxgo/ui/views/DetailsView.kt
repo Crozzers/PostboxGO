@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -41,12 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.crozzers.postboxgo.ui.components.PostboxMap
 
 @Composable
 fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit) {
@@ -118,27 +112,6 @@ fun PostboxDetails(postbox: Postbox) {
     Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
 }
 
-@Composable
-fun PostboxMap(coords: Pair<Float, Float>, modifier: Modifier = Modifier) {
-    val postboxPos = LatLng(
-        coords.first.toDouble(),
-        coords.second.toDouble()
-    )
-    val cameraPosState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            postboxPos, 15f
-        )
-    }
-    GoogleMap(
-        modifier = modifier,
-        cameraPositionState = cameraPosState,
-    ) {
-        Marker(
-            state = MarkerState(position = postboxPos),
-            title = "Postbox"
-        )
-    }
-}
 
 @Composable
 fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Unit) {
@@ -189,6 +162,7 @@ fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Un
 
 @Composable
 fun ConfirmDeleteDialog(callback: (state: Boolean) -> Unit) {
+    // TODO: fix in light/dark mode
     AlertDialog(
         icon = {
             Icon(

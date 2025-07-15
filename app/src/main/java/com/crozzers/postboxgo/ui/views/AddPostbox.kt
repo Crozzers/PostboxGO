@@ -2,16 +2,20 @@ package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
 import android.content.Context
+import android.content.res.Configuration
 import android.location.Location
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,21 +26,27 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
+import com.google.maps.android.compose.MapUiSettings
 import java.time.LocalDateTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -46,109 +56,98 @@ import kotlin.uuid.Uuid
 @Composable
 fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbox) -> Unit) {
     var selectedPostbox by remember { mutableStateOf<DetailedPostboxInfo?>(null) }
-    var postboxDropdownExpanded by remember { mutableStateOf(false) }
     var selectedMonarch by remember { mutableStateOf(Monarch.NONE) }
-    var monarchDropdownExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val nearbyPostboxes = remember { mutableStateListOf<DetailedPostboxInfo>() }
-    // store here to pass to other stuff. Hacky but true
-    val context = LocalContext.current
-    getLocation(LocalContext.current, locationClient) { location ->
-        getNearbyPostboxes(context, location) { postboxes ->
-            nearbyPostboxes.clear()
-            nearbyPostboxes.addAll(postboxes)
-        }
+    var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
+    val configuration = LocalConfiguration.current
+    var screenHeight by remember { mutableIntStateOf(configuration.screenHeightDp) }
+
+    val mapSettings = MapUiSettings(
+        scrollGesturesEnabled = false,
+        scrollGesturesEnabledDuringRotateOrZoom = false,
+        zoomGesturesEnabled = false,
+        tiltGesturesEnabled = false,
+        rotationGesturesEnabled = false
+    )
+
+    LaunchedEffect(configuration) {
+        snapshotFlow { configuration.orientation }
+            .collect {
+                orientation = it
+                screenHeight = configuration.screenHeightDp
+            }
     }
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState())
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text("Add New Postbox", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        ExposedDropdownMenuBox(
-            expanded = postboxDropdownExpanded,
-            onExpandedChange = { postboxDropdownExpanded = !postboxDropdownExpanded },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value =
-                    if (selectedPostbox == null) "Select a postbox"
-                    else selectedPostbox!!.officeDetails.name +
-                            " (${selectedPostbox!!.locationDetails.distance} miles away)",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(text = "Postbox") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = postboxDropdownExpanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedLabelColor = MaterialTheme.colorScheme.outline,
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = postboxDropdownExpanded,
-                onDismissRequest = { postboxDropdownExpanded = false }
-            ) {
-                nearbyPostboxes.forEach { postbox ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                postbox.officeDetails.name +
-                                        " (${postbox.locationDetails.distance} miles away)"
-                            )
-                        },
-                        onClick = {
-                            selectedPostbox = postbox
-                            postboxDropdownExpanded = false
-                        }
+        when (orientation) {
+            Configuration.ORIENTATION_PORTRAIT -> {
+                SelectPostbox(
+                    locationClient,
+                    selectedPostbox
+                ) { p ->
+                    selectedPostbox = p
+                }
+
+                if (selectedPostbox != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PostboxMap(
+                        Pair(
+                            selectedPostbox!!.locationDetails.latitude,
+                            selectedPostbox!!.locationDetails.longitude
+                        ),
+                        Modifier
+                            .fillMaxWidth()
+                            .height((screenHeight * 0.35).dp),
+                        16.5f,
+                        mapSettings
                     )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
+            }
+
+            else -> {
+                Row(Modifier.padding(8.dp)) {
+                    Column(Modifier.fillMaxWidth(0.5f)) {
+                        SelectPostbox(locationClient, selectedPostbox) { p ->
+                            selectedPostbox = p
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
+                    }
+
+                    Spacer(Modifier.padding(8.dp))
+
+                    if (selectedPostbox != null) {
+                        PostboxMap(
+                            Pair(
+                                selectedPostbox!!.locationDetails.latitude,
+                                selectedPostbox!!.locationDetails.longitude
+                            ), Modifier
+                                .fillMaxWidth()
+                                .height((screenHeight * 0.3).dp), 16.5f,
+                            mapSettings
+                        )
+                    }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        ExposedDropdownMenuBox(
-            expanded = monarchDropdownExpanded,
-            onExpandedChange = { monarchDropdownExpanded = !monarchDropdownExpanded },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = selectedMonarch.name,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(text = "Monarch") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monarchDropdownExpanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedLabelColor = MaterialTheme.colorScheme.outline,
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = monarchDropdownExpanded,
-                onDismissRequest = { monarchDropdownExpanded = false }
-            ) {
-                Monarch.entries.forEach { monarch ->
-                    DropdownMenuItem(
-                        text = { Text(monarch.name) },
-                        onClick = {
-                            selectedMonarch = monarch
-                            monarchDropdownExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
                 errorMessage = null
@@ -156,19 +155,21 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
                     errorMessage = "Please select a postbox"
                     return@Button
                 }
-                callback(
-                    Postbox(
-                        Uuid.random().toString(),
-                        Pair(
-                            selectedPostbox!!.locationDetails.latitude,
-                            selectedPostbox!!.locationDetails.longitude
-                        ),
-                        selectedMonarch,
-                        LocalDateTime.now().toString(),
-                        selectedPostbox!!.officeDetails.name,
-                        selectedPostbox!!.officeDetails.address3
+                selectedPostbox?.let {
+                    callback(
+                        Postbox(
+                            Uuid.random().toString(),
+                            Pair(
+                                it.locationDetails.latitude,
+                                it.locationDetails.longitude
+                            ),
+                            selectedMonarch,
+                            LocalDateTime.now().toString(),
+                            it.officeDetails.name,
+                            it.officeDetails.address3
+                        )
                     )
-                )
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -182,6 +183,109 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
+        }
+    }
+}
+
+@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
+@Composable
+fun SelectPostbox(
+    locationClient: FusedLocationProviderClient,
+    selectedPostbox: DetailedPostboxInfo?,
+    selectionCallback: (p: DetailedPostboxInfo) -> Unit
+) {
+    var postboxDropdownExpanded by remember { mutableStateOf(false) }
+
+    val nearbyPostboxes = remember { mutableStateListOf<DetailedPostboxInfo>() }
+    // store here to pass to other stuff. Hacky but true
+    val context = LocalContext.current
+    getLocation(LocalContext.current, locationClient) { location ->
+        getNearbyPostboxes(context, location) { postboxes ->
+            nearbyPostboxes.clear()
+            nearbyPostboxes.addAll(postboxes)
+        }
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = postboxDropdownExpanded,
+        onExpandedChange = { postboxDropdownExpanded = !postboxDropdownExpanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value =
+                if (selectedPostbox == null) "Select a postbox"
+                else selectedPostbox.officeDetails.name +
+                        " (${selectedPostbox.locationDetails.distance} miles away)",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = "Postbox") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = postboxDropdownExpanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedLabelColor = MaterialTheme.colorScheme.outline,
+            )
+        )
+        ExposedDropdownMenu(
+            expanded = postboxDropdownExpanded,
+            onDismissRequest = { postboxDropdownExpanded = false }
+        ) {
+            nearbyPostboxes.forEach { postbox ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            postbox.officeDetails.name +
+                                    " (${postbox.locationDetails.distance} miles away)"
+                        )
+                    },
+                    onClick = {
+                        postboxDropdownExpanded = false
+                        selectionCallback(postbox)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> Unit) {
+    var monarchDropdownExpanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = monarchDropdownExpanded,
+        onExpandedChange = { monarchDropdownExpanded = !monarchDropdownExpanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedMonarch.name,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = "Monarch") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monarchDropdownExpanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedLabelColor = MaterialTheme.colorScheme.outline,
+            )
+        )
+        ExposedDropdownMenu(
+            expanded = monarchDropdownExpanded,
+            onDismissRequest = { monarchDropdownExpanded = false }
+        ) {
+            Monarch.entries.forEach { monarch ->
+                DropdownMenuItem(
+                    text = { Text(monarch.name) },
+                    onClick = {
+                        monarchDropdownExpanded = false
+                        selectionCallback(monarch)
+                    }
+                )
+            }
         }
     }
 }

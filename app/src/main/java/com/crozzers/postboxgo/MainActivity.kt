@@ -56,8 +56,6 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-
-
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         enableEdgeToEdge()
@@ -82,7 +80,9 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = NavigationItem.ListView.route,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
                     ) {
                         composable(NavigationItem.ListView.route) {
                             ListView(
