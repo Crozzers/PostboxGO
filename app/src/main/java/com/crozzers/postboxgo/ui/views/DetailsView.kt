@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -111,7 +112,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 @Composable
 fun PostboxDetails(postbox: Postbox) {
     Text(text = postbox.name, fontSize = 24.sp)
-    Text(text = "Registered: ${postbox.dateRegistered}", fontSize = 12.sp, color = Color.Gray)
+    Text(text = "Registered: ${postbox.dateRegistered}", fontSize = 12.sp)
     Text(text = "Type: ${postbox.type ?: "Unknown"}")
     Text(text = "Monarch: ${postbox.monarch}")
     Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
@@ -165,15 +166,15 @@ fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Un
         },
         modifier = Modifier
             .fillMaxWidth(),
-        border = BorderStroke(1.dp, Color.Red),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
     ) {
         Row() {
             Icon(
                 imageVector = Icons.Filled.Delete,
                 contentDescription = "Delete Postbox",
-                tint = Color.Red
+                tint = MaterialTheme.colorScheme.primary
             )
-            Text(text = "Delete Postbox", color = Color.Red)
+            Text(text = "Delete Postbox", color = MaterialTheme.colorScheme.primary)
         }
     }
     when {

@@ -1,5 +1,6 @@
 package com.crozzers.postboxgo.ui.views
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,16 +40,23 @@ fun ListView(
 fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
     Card(
         Modifier
-            .height(120.dp)
+            .height(130.dp)
             .fillMaxWidth()
             .padding(8.dp)
             .clickable { onClick(postbox) }
+            .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
-        Column {
-            Text(text = "Name: ${postbox.name}")
-            Text(text = "Type: ${postbox.type}")
-            Text(text = "Monarch: ${postbox.monarch}")
-            Text(text = "Registered: ${postbox.dateRegistered}")
+        Column (Modifier.padding(8.dp)) {
+            Text(text = "Name: ${postbox.name}", color = MaterialTheme.colorScheme.surfaceVariant)
+            Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)
+            Text(
+                text = "Monarch: ${postbox.monarch}",
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
+            Text(
+                text = "Registered: ${postbox.dateRegistered}",
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }

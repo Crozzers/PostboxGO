@@ -8,10 +8,13 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
@@ -20,22 +23,24 @@ import com.crozzers.postboxgo.NavigationItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(navController: NavController) {
-    TopAppBar(title = {
-        Text(
-            text = "PostboxGO", maxLines = 1, overflow = TextOverflow.Ellipsis
-        )
-    }, actions = {
-        IconButton(onClick = { navController.navigate(NavigationItem.ListView.route) }) {
-            Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
-        }
-        IconButton(onClick = {
-            navController.navigate(NavigationItem.AddPostbox.route)
-        }) {
-            Icon(
-                imageVector = Icons.Filled.Add, contentDescription = "Register Postbox"
+    TopAppBar(
+        title = {
+            Text(
+                text = "PostboxGO", maxLines = 1, overflow = TextOverflow.Ellipsis
             )
+        }, actions = {
+            IconButton(onClick = { navController.navigate(NavigationItem.ListView.route) }) {
+                Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
+            }
+            IconButton(onClick = {
+                navController.navigate(NavigationItem.AddPostbox.route)
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Add, contentDescription = "Register Postbox"
+                )
+            }
         }
-    })
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +66,10 @@ fun BottomBar(navController: NavController, visible: Boolean, isListView: Boolea
                 imageVector = Icons.Filled.LocationOn,
                 contentDescription = "Map View"
             )
-        }, label = { Text("Map View") })
+        }, label = { Text("Map View") },
+//            colors = NavigationBarItemDefaults.colors(
+//                unselectedTextColor =
+//            )
+        )
     }
 }
