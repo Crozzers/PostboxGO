@@ -14,6 +14,9 @@ object Setting {
     val COLOUR_SCHEME = stringPreferencesKey("colour_scheme")
 }
 
+/**
+ * Returns a callback that accepts a value and sets the setting in a coroutine
+ */
 fun <T> setSetting(settings: DataStore<Preferences>, key: Preferences.Key<T>): (v: T) -> Unit {
     return { value ->
         CoroutineScope(Dispatchers.IO).launch {

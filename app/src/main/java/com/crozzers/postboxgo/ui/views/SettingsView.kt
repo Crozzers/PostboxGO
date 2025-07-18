@@ -12,6 +12,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,32 +21,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsView() {
     val settings = LocalContext.current.settings
 
+    val selectedColourScheme = settings.data.map { preferences ->
+        preferences[Setting.COLOUR_SCHEME] ?: ColourSchemes.Standard.name
+    }.collectAsState(initial = ColourSchemes.Standard.name)
+
     Column(modifier = Modifier.padding(16.dp)) {
-        ColourSchemeDropdown(setSetting(settings, Setting.COLOUR_SCHEME))
+        ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColourSchemeDropdown(onChange: (s: String) -> Unit) {
+fun ColourSchemeDropdown(selectedScheme: State<String>, onChange: (s: String) -> Unit) {
     var dropdownExpanded by remember { mutableStateOf(false) }
-    var selectedScheme by remember { mutableStateOf("Light") }
 
     ExposedDropdownMenuBox(
         expanded = dropdownExpanded,
@@ -52,7 +52,7 @@ fun ColourSchemeDropdown(onChange: (s: String) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedScheme,
+            value = selectedScheme.value,
             onValueChange = {},
             readOnly = true,
             label = { Text(text = "Colour Scheme") },
@@ -73,7 +73,6 @@ fun ColourSchemeDropdown(onChange: (s: String) -> Unit) {
                     text = { Text(scheme.name) },
                     onClick = {
                         dropdownExpanded = false
-                        selectedScheme = scheme.name
                         onChange(scheme.name)
                     }
                 )
