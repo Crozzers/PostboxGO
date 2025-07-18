@@ -6,6 +6,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
+
 android {
     namespace = "com.crozzers.postboxgo"
     compileSdk = 36
@@ -59,6 +60,8 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:$mapsComposeVersion")
     implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
     implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+
 
     // tests and dev
     testImplementation(libs.junit)

@@ -26,6 +26,7 @@ import com.crozzers.postboxgo.ui.views.AddPostbox
 import com.crozzers.postboxgo.ui.views.DetailsView
 import com.crozzers.postboxgo.ui.views.ListView
 import com.crozzers.postboxgo.ui.views.PostboxMapView
+import com.crozzers.postboxgo.ui.views.SettingsView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
@@ -36,6 +37,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         saveFile = SaveFile(this)
+
     }
 }
 
@@ -115,6 +117,9 @@ class MainActivity : ComponentActivity() {
                                 (applicationContext as App).saveFile
                             ) { navController.navigate(NavigationItem.ListView.route) }
                         }
+                        composable(NavigationItem.Settings.route) {
+                            SettingsView()
+                        }
                     }
                 }
             }
@@ -124,7 +129,7 @@ class MainActivity : ComponentActivity() {
 
 
 enum class Screen {
-    ListView, MAPVIEW, ADDPOSTBOX, VIEWPOSTBOX
+    ListView, MAPVIEW, ADDPOSTBOX, VIEWPOSTBOX, SETTINGS
 }
 
 sealed class NavigationItem(val route: String) {
@@ -132,4 +137,5 @@ sealed class NavigationItem(val route: String) {
     object MapView : NavigationItem(Screen.MAPVIEW.name)
     object AddPostbox : NavigationItem(Screen.ADDPOSTBOX.name)
     object ViewPostbox : NavigationItem(Screen.VIEWPOSTBOX.name)
+    object Settings : NavigationItem(Screen.SETTINGS.name)
 }

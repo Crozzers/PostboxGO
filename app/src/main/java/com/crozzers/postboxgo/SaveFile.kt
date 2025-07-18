@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlinx.serialization.encodeToString
 
+
 class SaveFile(private val context: Context) {
     private var data: SaveData
     private var fileName = "save.json"

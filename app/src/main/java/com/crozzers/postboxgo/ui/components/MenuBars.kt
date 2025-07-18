@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,9 +27,17 @@ fun TopBar(navController: NavController) {
                 text = "PostboxGO", maxLines = 1, overflow = TextOverflow.Ellipsis
             )
         }, actions = {
+            // settings first because it's harder to reach and lesser used
+            IconButton(onClick = {
+                navController.navigate(NavigationItem.Settings.route)
+            }) {
+                Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
+            }
+            // homepage next as it's less used than adding
             IconButton(onClick = { navController.navigate(NavigationItem.ListView.route) }) {
                 Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
             }
+            // most used, whack it in thumb's reach in the top right
             IconButton(onClick = {
                 navController.navigate(NavigationItem.AddPostbox.route)
             }) {

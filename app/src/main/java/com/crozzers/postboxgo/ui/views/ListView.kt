@@ -25,6 +25,7 @@ fun ListView(
     postboxes: List<Postbox>,
     onItemClick: (postbox: Postbox) -> Unit
 ) {
+    // TODO: enable grid view in landscape
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,

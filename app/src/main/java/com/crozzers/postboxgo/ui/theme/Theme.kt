@@ -5,7 +5,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.crozzers.postboxgo.Setting
+import com.crozzers.postboxgo.settings
+import kotlinx.coroutines.flow.map
 
 private val LightColorScheme = lightColorScheme(
     // stuff for top bar
@@ -59,6 +64,10 @@ private val DarkColorScheme = darkColorScheme(
     error = Color.White
 )
 
+enum class ColourSchemes {
+    Standard, Dark, System
+}
+
 @Composable
 fun PostboxGOTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -66,18 +75,19 @@ fun PostboxGOTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-//            val context = LocalContext.current
-//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-//        }
-//
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val settings = LocalContext.current.settings
+
+    val colourScheme = settings.data.map { preferences ->
+        val scheme = preferences[Setting.COLOUR_SCHEME]
+        when (scheme) {
+            ColourSchemes.System.name -> if (darkTheme) DarkColorScheme else LightColorScheme
+            ColourSchemes.Dark.name -> DarkColorScheme
+            else -> LightColorScheme
+        }
+    }.collectAsState(initial = LightColorScheme)
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = colourScheme.value,
         typography = Typography,
         content = content
     )
