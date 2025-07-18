@@ -20,12 +20,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.crozzers.postboxgo.ui.components.BottomBar
+import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.ui.components.TopBar
 import com.crozzers.postboxgo.ui.theme.PostboxGOTheme
 import com.crozzers.postboxgo.ui.views.AddPostbox
 import com.crozzers.postboxgo.ui.views.DetailsView
 import com.crozzers.postboxgo.ui.views.ListView
-import com.crozzers.postboxgo.ui.views.PostboxMapView
 import com.crozzers.postboxgo.ui.views.SettingsView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -93,9 +93,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(NavigationItem.MapView.route) {
-                            PostboxMapView(
+                            PostboxMap(
                                 (applicationContext as App).saveFile.getPostboxes(),
-                                { p -> navController.navigate("${NavigationItem.ViewPostbox.route}/${p.id}") }
+                                Modifier.fillMaxSize(),
+                                onPostboxClick = { p -> navController.navigate("${NavigationItem.ViewPostbox.route}/${p.id}") }
                             )
                         }
                         composable(NavigationItem.AddPostbox.route) {

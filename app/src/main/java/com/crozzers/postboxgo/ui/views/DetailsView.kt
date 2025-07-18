@@ -60,7 +60,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                     .padding(16.dp)
             ) {
                 PostboxDetails(postbox)
-                PostboxMap(postbox.coords, Modifier.fillMaxHeight(0.75f))
+                PostboxMap(postbox, Modifier.fillMaxHeight(0.75f))
                 ActionButtons(
                     postbox.coords
                 ) { state ->
@@ -96,7 +96,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                 Column(
                     Modifier.fillMaxSize()
                 ) {
-                    PostboxMap(postbox.coords, Modifier.fillMaxSize())
+                    PostboxMap(postbox, Modifier.fillMaxSize())
                 }
             }
         }

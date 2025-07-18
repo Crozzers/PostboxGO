@@ -46,6 +46,7 @@ import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationToken
 import com.google.maps.android.compose.MapUiSettings
 import java.time.LocalDateTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -63,14 +64,6 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
     val configuration = LocalConfiguration.current
     var screenHeight by remember { mutableIntStateOf(configuration.screenHeightDp) }
 
-    val mapSettings = MapUiSettings(
-        scrollGesturesEnabled = false,
-        scrollGesturesEnabledDuringRotateOrZoom = false,
-        zoomGesturesEnabled = false,
-        tiltGesturesEnabled = false,
-        rotationGesturesEnabled = false
-    )
-
     LaunchedEffect(configuration) {
         snapshotFlow { configuration.orientation }
             .collect {
@@ -82,7 +75,6 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
     Column(
         modifier = Modifier
             .padding(8.dp)
-            .verticalScroll(rememberScrollState())
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -102,15 +94,11 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
                 if (selectedPostbox != null) {
                     Spacer(modifier = Modifier.height(16.dp))
                     PostboxMap(
-                        Pair(
-                            selectedPostbox!!.locationDetails.latitude,
-                            selectedPostbox!!.locationDetails.longitude
-                        ),
+                        selectedPostbox!!,
                         Modifier
                             .fillMaxWidth()
                             .height((screenHeight * 0.35).dp),
-                        16.5f,
-                        mapSettings
+                        locationClient = locationClient
                     )
                 }
 
@@ -134,13 +122,10 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
 
                     if (selectedPostbox != null) {
                         PostboxMap(
-                            Pair(
-                                selectedPostbox!!.locationDetails.latitude,
-                                selectedPostbox!!.locationDetails.longitude
-                            ), Modifier
+                            selectedPostbox!!, Modifier
                                 .fillMaxWidth()
-                                .height((screenHeight * 0.3).dp), 16.5f,
-                            mapSettings
+                                .height((screenHeight * 0.4).dp),
+                            locationClient = locationClient
                         )
                     }
                 }
@@ -157,17 +142,7 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
                 }
                 selectedPostbox?.let {
                     callback(
-                        Postbox(
-                            Uuid.random().toString(),
-                            Pair(
-                                it.locationDetails.latitude,
-                                it.locationDetails.longitude
-                            ),
-                            selectedMonarch,
-                            LocalDateTime.now().toString(),
-                            it.officeDetails.name,
-                            it.officeDetails.address3
-                        )
+                        Postbox.fromDetailedPostboxInfo(it, selectedMonarch)
                     )
                 }
             },

@@ -1,6 +1,7 @@
 package com.crozzers.postboxgo
 
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 enum class Monarch {
     NONE,
@@ -23,8 +24,24 @@ data class Postbox(
     val monarch: Monarch,
     val dateRegistered: String,
     val name: String,
-    val type: String?,
-)
+    val type: String?
+) {
+    companion object {
+        fun fromDetailedPostboxInfo(pb: DetailedPostboxInfo, monarch: Monarch = Monarch.NONE): Postbox {
+            return Postbox(
+                id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}",
+                coords = Pair(
+                    pb.locationDetails.latitude,
+                    pb.locationDetails.longitude,
+                ),
+                monarch = monarch,
+                dateRegistered = LocalDateTime.now().toString(),
+                name = pb.officeDetails.name,
+                type = pb.officeDetails.address3
+            )
+        }
+    }
+}
 
 // stuff we get from post office API
 
