@@ -216,6 +216,7 @@ fun SelectPostbox(
             value =
                 if (selectedPostbox == null) "Select a postbox"
                 else selectedPostbox.officeDetails.name +
+                        " (${selectedPostbox.officeDetails.postcode} ${selectedPostbox.officeDetails.address1})" +
                         " (${selectedPostbox.locationDetails.distance} miles away)",
             onValueChange = {},
             readOnly = true,
@@ -237,6 +238,7 @@ fun SelectPostbox(
                     text = {
                         Text(
                             postbox.officeDetails.name +
+                                    " (${postbox.officeDetails.postcode} ${postbox.officeDetails.address1})" +
                                     " (${postbox.locationDetails.distance} miles away)"
                         )
                     },
