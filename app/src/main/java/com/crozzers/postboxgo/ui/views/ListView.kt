@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
-import com.crozzers.postboxgo.SaveFile
+import java.time.LocalDateTime
 
 @Composable
 fun ListView(
@@ -31,7 +31,9 @@ fun ListView(
             .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        items(postboxes) { postbox ->
+        items(postboxes.sortedBy {
+            LocalDateTime.parse(it.dateRegistered)
+        }.reversed()) { postbox ->
             PostboxCard(postbox, onItemClick)
         }
     }
@@ -47,7 +49,7 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             .clickable { onClick(postbox) }
             .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
-        Column (Modifier.padding(8.dp)) {
+        Column(Modifier.padding(8.dp)) {
             Text(text = "Name: ${postbox.name}", color = MaterialTheme.colorScheme.surfaceVariant)
             Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)
             Text(
