@@ -1,8 +1,15 @@
 package com.crozzers.postboxgo.ui.views
 
+import android.content.Intent
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -21,15 +28,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
 import kotlinx.coroutines.flow.map
 
+val LOG_TAG = "SettingsView"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsView() {
+fun SettingsView(saveFile: SaveFile) {
     val settings = LocalContext.current.settings
 
     val selectedColourScheme = settings.data.map { preferences ->
@@ -38,6 +48,8 @@ fun SettingsView() {
 
     Column(modifier = Modifier.padding(16.dp)) {
         ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
+        Spacer(modifier = Modifier.padding(16.dp))
+        SaveFileManagement(saveFile)
     }
 }
 
@@ -78,5 +90,32 @@ fun ColourSchemeDropdown(selectedScheme: State<String>, onChange: (s: String) ->
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SaveFileManagement(saveFile: SaveFile) {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri == null) {
+            Log.i(LOG_TAG, "Savefile import cancelled")
+        } else {
+            saveFile.import(uri)
+        }
+    }
+
+    Text("Save file options:", style = MaterialTheme.typography.titleMedium)
+    Row(Modifier.fillMaxWidth()) {
+        Button(onClick = {
+            launcher.launch("application/json")
+        }) {
+            Text("Import and overwrite")
+        }
+        Spacer(Modifier.padding(16.dp))
+        Button(onClick = { saveFile.export() }) {
+            Text("Export")
+        }
+
     }
 }

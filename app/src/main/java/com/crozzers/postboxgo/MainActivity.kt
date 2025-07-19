@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
                             ) { navController.navigate(NavigationItem.ListView.route) }
                         }
                         composable(NavigationItem.Settings.route) {
-                            SettingsView()
+                            SettingsView((applicationContext as App).saveFile)
                         }
                     }
                 }

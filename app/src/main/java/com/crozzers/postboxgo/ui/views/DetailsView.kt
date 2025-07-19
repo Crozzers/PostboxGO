@@ -16,14 +16,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.ui.components.ConfirmDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
 
 @Composable
@@ -152,7 +150,7 @@ fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Un
     }
     when {
         openConfirmDeleteDialog.value -> {
-            ConfirmDeleteDialog(callback = { state ->
+            ConfirmDialog(callback = { state ->
                 openConfirmDeleteDialog.value = false
                 deleteCallback(state)
             })
@@ -160,38 +158,3 @@ fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Un
     }
 }
 
-@Composable
-fun ConfirmDeleteDialog(callback: (state: Boolean) -> Unit) {
-    // TODO: fix in light/dark mode
-    AlertDialog(
-        icon = {
-            Icon(
-                imageVector = Icons.Filled.Warning,
-                contentDescription = "Are you sure"
-            )
-        },
-        title = { Text("Are you sure?") },
-        text = { Text("This action cannot be undone") },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    callback(true)
-                }
-            ) {
-                Text("Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    callback(false)
-                }
-            ) {
-                Text("Dismiss")
-            }
-        },
-        onDismissRequest = {
-            callback(false)
-        },
-    )
-}
