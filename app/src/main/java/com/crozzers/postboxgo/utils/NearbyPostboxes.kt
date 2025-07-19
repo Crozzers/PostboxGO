@@ -47,10 +47,14 @@ fun getNearbyPostboxes(
         return
     }
 
+    // using this API while I wait for royal mail to approve my API access to their
+    // official APIs. I have contacted them, but their support is slow as all hell
     val url = URL(
         "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
-                "?postCode=${postcode}&searchRadius=1&count=10&selectedName=" +
-                "&officeType=postboxes&type=2&appliedFilters=undefined"
+                // for some reason setting the searchRadius at 40 yields more postboxes
+                // even when they aren't outside that radius
+                "?postCode=${postcode}&searchRadius=40&count=10" +
+                "&officeType=postboxes&type=2&appliedFilters=null"
     )
 
     CoroutineScope(Dispatchers.IO).launch {
