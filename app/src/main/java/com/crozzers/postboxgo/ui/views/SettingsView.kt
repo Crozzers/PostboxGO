@@ -36,7 +36,7 @@ import com.crozzers.postboxgo.ui.theme.ColourSchemes
 import com.crozzers.postboxgo.utils.clearPostboxData
 import kotlinx.coroutines.flow.map
 
-val LOG_TAG = "SettingsView"
+const val LOG_TAG = "SettingsView"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
