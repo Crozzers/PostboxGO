@@ -1,7 +1,7 @@
 package com.crozzers.postboxgo.ui.views
 
-import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -33,6 +33,7 @@ import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
+import com.crozzers.postboxgo.utils.clearPostboxData
 import kotlinx.coroutines.flow.map
 
 val LOG_TAG = "SettingsView"
@@ -50,6 +51,8 @@ fun SettingsView(saveFile: SaveFile) {
         ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
         Spacer(modifier = Modifier.padding(16.dp))
         SaveFileManagement(saveFile)
+        Spacer(modifier = Modifier.padding(16.dp))
+        ClearPBCacheButton(modifier = Modifier.padding(16.dp))
     }
 }
 
@@ -118,4 +121,13 @@ fun SaveFileManagement(saveFile: SaveFile) {
         }
 
     }
+}
+
+@Composable
+fun ClearPBCacheButton(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    Button(onClick = {
+        clearPostboxData(context)
+        Toast.makeText(context, "Postbox cache cleared", Toast.LENGTH_SHORT).show()
+    }) { Text("Clear nearby postbox cache") }
 }

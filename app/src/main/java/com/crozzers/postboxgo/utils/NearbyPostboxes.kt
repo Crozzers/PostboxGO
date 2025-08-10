@@ -47,8 +47,9 @@ fun getNearbyPostboxes(
         return
     }
 
-    // using this API while I wait for royal mail to approve my API access to their
-    // official APIs. I have contacted them, but their support is slow as all hell
+    // I did ask Royal Mail if I could use their official API and they said:
+    // "...you need to be sending 150 items per day to qualify for API..."
+    // I am not sending anything, I just want access to the postbox data :(
     val url = URL(
         "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
                 // for some reason setting the searchRadius at 40 yields more postboxes
@@ -70,7 +71,10 @@ fun getNearbyPostboxes(
             connect()
 
             if (responseCode != 200) {
-                Log.e(LOG_TAG, "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage")
+                Log.e(
+                    LOG_TAG,
+                    "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage"
+                )
                 return@launch
             }
             postboxData = JsonParser.decodeFromString<List<DetailedPostboxInfo>>(
@@ -149,4 +153,12 @@ fun cachePostboxData(context: Context, postcode: String, postboxData: List<Detai
 
     file.writeText(JsonParser.encodeToString(existingData))
     Log.i(LOG_TAG, "Cached new entry for $postcode")
+}
+
+fun clearPostboxData(context: Context): Boolean {
+    val file = File(context.filesDir, CACHE_FILE)
+    if (file.exists()) {
+        return file.delete();
+    }
+    return false;
 }
