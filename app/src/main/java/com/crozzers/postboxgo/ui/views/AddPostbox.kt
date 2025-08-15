@@ -223,6 +223,13 @@ fun SelectPostbox(
                     }
                 )
             }
+            if (nearbyPostboxes.isEmpty()) {
+                DropdownMenuItem(
+                    text = { Text("Getting location...") },
+                    onClick = {  },
+                    enabled = false
+                )
+            }
         }
     }
 }
@@ -273,12 +280,12 @@ fun getLocation(
     locationClient: FusedLocationProviderClient,
     callback: (l: Location) -> Unit
 ) {
-    locationClient.lastLocation.addOnCompleteListener { task ->
+    locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).addOnCompleteListener { task ->
         if (task.isSuccessful && task.result != null) {
             callback(task.result)
-        } else if (task.isSuccessful) {
-            Toast.makeText(context, "Determining current location...", Toast.LENGTH_SHORT).show()
-            locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+        } else {
+            Toast.makeText(context, "Determining last known location...", Toast.LENGTH_SHORT).show()
+            locationClient.lastLocation
                 .addOnCompleteListener { subtask ->
                     if (subtask.isSuccessful && subtask.result != null) {
                         callback(subtask.result)
@@ -290,8 +297,6 @@ fun getLocation(
                         ).show()
                     }
                 }
-        } else {
-            Toast.makeText(context, "Failed to get current location", Toast.LENGTH_SHORT).show()
         }
     }
 }
