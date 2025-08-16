@@ -77,7 +77,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.bumpVersion == true && inputs.version || GITHUB_REF_NAME }}
+          ref: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
 
       - name: Setup JDK
         uses: actions/setup-java@v4
