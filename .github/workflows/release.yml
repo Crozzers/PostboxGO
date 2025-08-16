@@ -1,0 +1,161 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to publish
+        type: string
+        required: true
+      playstore:
+        description: Release to Play store
+        type: boolean
+        default: false
+      track:
+        description: Which play store track to publish to
+        type: choice
+        default: alpha
+        options:
+          - alpha
+          - beta
+          - qa
+          - production
+      draft:
+        description: Create a draft release
+        type: boolean
+        default: false
+      ghRelease:
+        description: Create a github release
+        type: boolean
+        default: false
+      bumpVersion:
+        description: Bump the version file and create tag
+        type: boolean
+        default: false
+
+jobs:
+  bump_version:
+    runs-on: ubuntu-latest
+    environment: release-env
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version number
+        working-directory: app/
+        run: |
+          sed -ri 's|(\s*versionCode\s*=\s*)(.*)|\1'$GITHUB_RUN_NUMBER'|g' build.gradle.kts
+          sed -ri 's|(versionName\s*=\s*")(.*)(")|\1'$VERSION'\3|g' build.gradle.kts
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Edit changelog
+        run: .github/scripts/edit-changelog.sh "$VERSION"
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Commit and tag
+        if: ${{ inputs.bumpVersion }}
+        run: |
+          git config --global user.name "Github Actions [Bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+
+          git add ./
+          git commit -m "Bump $VERSION"
+          git tag "$VERSION"
+
+          git push
+          git push --tags
+        env:
+          VERSION: ${{ inputs.version }}
+
+  build_aab:
+    needs: [bump_version]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "11"
+
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build AAB
+        run: ./gradlew bundleRelease
+        continue-on-error: false
+
+      - name: Sign release
+        id: sign
+        uses: r0adkll/sign-android-release@1
+        with:
+          releaseDirectory: app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_B64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: app/build/outputs/bundle/release/app-release.aab
+
+  release_aab:
+    if: ${{ inputs.playstore }}
+    needs: [build_aab]
+    runs-on: ubuntu-latest
+    environment: release-env
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+
+      - name: Publish to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.crozzers.postboxgo
+          releaseFiles: ${{ github.workspace }}/app-release.aab
+          track: ${{ inputs.track }}
+          status: ${{ inputs.draft == true && 'draft' || 'completed' }}
+
+  release_github:
+    if: ${{ inputs.ghRelease }}
+    runs-on: ubuntu-latest
+    environment: release-env
+    needs: [bump_version, release_aab]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: dist
+
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v2
+        with:
+          changelog_file: CHANGELOG.md
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.extract-release-notes.outputs.release_notes }}
+          draft: false
+          files: dist/*
+          name: v${{ inputs.version }}
+          tag_name: ${{ inputs.version }}
