@@ -53,8 +53,8 @@ fun ListView(
     }.collectAsState(initial = SortOption.DATE.name)
 
     val sortDirection = LocalContext.current.settings.data.map { preferences ->
-        preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: 1
-    }.collectAsState(initial = 1)
+        preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
+    }.collectAsState(initial = SortDirection.DESCENDING.name)
 
     val filteredAndSortedPostboxes = postboxes.values.filter {
         humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
@@ -72,7 +72,7 @@ fun ListView(
             }
         }
     ).let {
-        if (sortDirection.value == 1) {
+        if (sortDirection.value == SortDirection.DESCENDING.name) {
             it.reversed()
         } else {
             it
