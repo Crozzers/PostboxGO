@@ -43,6 +43,8 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
+import com.crozzers.postboxgo.utils.humanReadableMonarch
+import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import kotlin.uuid.ExperimentalUuidApi
@@ -194,7 +196,7 @@ fun SelectPostbox(
         OutlinedTextField(
             value =
                 if (selectedPostbox == null) "Select a postbox"
-                else selectedPostbox.officeDetails.name +
+                else humanReadablePostboxName(selectedPostbox.officeDetails.name) +
                         " (${selectedPostbox.officeDetails.postcode} ${selectedPostbox.officeDetails.address1})" +
                         " (${selectedPostbox.locationDetails.distance} miles away)",
             onValueChange = {},
@@ -216,7 +218,7 @@ fun SelectPostbox(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            postbox.officeDetails.name +
+                            humanReadablePostboxName(postbox.officeDetails.name) +
                                     " (${postbox.officeDetails.postcode} ${postbox.officeDetails.address1})" +
                                     " (${postbox.locationDetails.distance} miles away)"
                         )
@@ -249,7 +251,7 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedMonarch.name,
+            value = humanReadableMonarch(selectedMonarch),
             onValueChange = {},
             readOnly = true,
             label = { Text(text = "Monarch") },
@@ -267,7 +269,7 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
         ) {
             Monarch.entries.forEach { monarch ->
                 DropdownMenuItem(
-                    text = { Text(monarch.name) },
+                    text = { Text(humanReadableMonarch(monarch)) },
                     onClick = {
                         monarchDropdownExpanded = false
                         selectionCallback(monarch)

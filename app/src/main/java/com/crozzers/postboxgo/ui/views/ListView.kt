@@ -18,6 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.utils.humanReadableDate
+import com.crozzers.postboxgo.utils.humanReadableMonarch
+import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import java.time.LocalDateTime
 
 @Composable
@@ -50,14 +53,17 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
         Column(Modifier.padding(8.dp)) {
-            Text(text = "Name: ${postbox.name}", color = MaterialTheme.colorScheme.surfaceVariant)
+            Text(
+                text = "Name: ${humanReadablePostboxName(postbox.name)}",
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
             Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)
             Text(
-                text = "Monarch: ${postbox.monarch}",
+                text = "Monarch: ${humanReadableMonarch(postbox.monarch)}",
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
             Text(
-                text = "Registered: ${postbox.dateRegistered}",
+                text = "Registered: ${humanReadableDate(postbox.dateRegistered)}",
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
         }

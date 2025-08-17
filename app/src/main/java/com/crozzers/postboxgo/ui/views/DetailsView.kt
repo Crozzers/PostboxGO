@@ -39,6 +39,9 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.ConfirmDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.humanReadableDate
+import com.crozzers.postboxgo.utils.humanReadableMonarch
+import com.crozzers.postboxgo.utils.humanReadablePostboxName
 
 @Composable
 fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit) {
@@ -103,10 +106,10 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 
 @Composable
 fun PostboxDetails(postbox: Postbox) {
-    Text(text = postbox.name, fontSize = 24.sp)
-    Text(text = "Registered: ${postbox.dateRegistered}", fontSize = 12.sp)
+    Text(text = humanReadablePostboxName(postbox.name), fontSize = 24.sp)
+    Text(text = "Registered: ${humanReadableDate(postbox.dateRegistered)}", fontSize = 12.sp)
     Text(text = "Type: ${postbox.type ?: "Unknown"}")
-    Text(text = "Monarch: ${postbox.monarch}")
+    Text(text = "Monarch: ${humanReadableMonarch(postbox.monarch)}")
     Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
 }
 
