@@ -3,15 +3,15 @@ package com.crozzers.postboxgo
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
-enum class Monarch {
-    NONE,
-    VICTORIA,
-    EDWARD7,
-    GEORGE5,
-    EDWARD8,
-    GEORGE6,
-    ELIZABETH2,
-    CHARLES3
+enum class Monarch(val displayName: String) {
+    NONE("Unmarked"),
+    VICTORIA("Victoria (VR)"),
+    EDWARD7("Edward 7th (E VII R)"),
+    GEORGE5("George 5th (GR)"),
+    EDWARD8("Edward 8th (E VIII R)"),
+    GEORGE6("George 6th (G VI R)"),
+    ELIZABETH2("Elizabeth 2nd (E II R)"),
+    CHARLES3("Charles 3rd (C III R)")
 }
 
 /**

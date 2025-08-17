@@ -43,7 +43,6 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
-import com.crozzers.postboxgo.utils.humanReadableMonarch
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
@@ -251,7 +250,7 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
         modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = humanReadableMonarch(selectedMonarch),
+            value = selectedMonarch.displayName,
             onValueChange = {},
             readOnly = true,
             label = { Text(text = "Monarch") },
@@ -269,7 +268,7 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
         ) {
             Monarch.entries.forEach { monarch ->
                 DropdownMenuItem(
-                    text = { Text(humanReadableMonarch(monarch)) },
+                    text = { Text(monarch.displayName) },
                     onClick = {
                         monarchDropdownExpanded = false
                         selectionCallback(monarch)

@@ -36,7 +36,6 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.utils.humanReadableDate
-import com.crozzers.postboxgo.utils.humanReadableMonarch
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
@@ -60,7 +59,7 @@ fun ListView(
     val filteredAndSortedPostboxes = postboxes.values.filter {
         humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
                 it.type?.contains(searchQuery, ignoreCase = true) == true ||
-                humanReadableMonarch(it.monarch).contains(searchQuery, ignoreCase = true) ||
+                it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
                 humanReadableDate(it.dateRegistered).contains(searchQuery, ignoreCase = true)
 
     }.sortedWith(
@@ -69,7 +68,7 @@ fun ListView(
                 SortOption.NAME -> humanReadablePostboxName(it.name)
                 SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
                 SortOption.TYPE -> it.type
-                SortOption.MONARCH -> humanReadableMonarch(it.monarch)
+                SortOption.MONARCH -> it.monarch.displayName
             }
         }
     ).let {
@@ -148,7 +147,7 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             )
             Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)
             Text(
-                text = "Monarch: ${humanReadableMonarch(postbox.monarch)}",
+                text = "Monarch: ${postbox.monarch.displayName}",
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
             Text(
