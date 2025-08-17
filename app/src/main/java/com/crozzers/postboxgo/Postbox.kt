@@ -27,7 +27,10 @@ data class Postbox(
     val type: String?
 ) {
     companion object {
-        fun fromDetailedPostboxInfo(pb: DetailedPostboxInfo, monarch: Monarch = Monarch.NONE): Postbox {
+        fun fromDetailedPostboxInfo(
+            pb: DetailedPostboxInfo,
+            monarch: Monarch = Monarch.NONE
+        ): Postbox {
             return Postbox(
                 id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}",
                 coords = Pair(

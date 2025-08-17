@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 
 object Setting {
     val COLOUR_SCHEME = stringPreferencesKey("colour_scheme")
+    val HOMEPAGE_SORT_KEY = stringPreferencesKey("homepage_sort_key")
+    val HOMEPAGE_SORT_DIRECTION = stringPreferencesKey("homepage_sort_direction")
 }
 
 /**

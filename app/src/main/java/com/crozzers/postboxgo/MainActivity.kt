@@ -100,7 +100,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(NavigationItem.AddPostbox.route) {
-                            AddPostbox(locationClient,(applicationContext as App).saveFile, { p ->
+                            AddPostbox(locationClient, (applicationContext as App).saveFile, { p ->
                                 (applicationContext as App).saveFile.addPostbox(p);
                                 navController.navigate(NavigationItem.ListView.route)
                             })

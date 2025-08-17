@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,6 +20,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -29,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.crozzers.postboxgo.SaveFile
@@ -50,8 +54,21 @@ fun SettingsView(saveFile: SaveFile) {
         preferences[Setting.COLOUR_SCHEME] ?: ColourSchemes.Standard.name
     }.collectAsState(initial = ColourSchemes.Standard.name)
 
+    val selectedSortOption = settings.data.map { preferences ->
+        preferences[Setting.HOMEPAGE_SORT_KEY] ?: SortOption.DATE.name
+    }.collectAsState(initial = SortOption.DATE.name)
+
+    val selectedSortDirection = settings.data.map { preferences ->
+        preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
+    }.collectAsState(initial = SortDirection.DESCENDING.name)
+
     Column(modifier = Modifier.padding(16.dp)) {
         ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
+        Spacer(modifier = Modifier.padding(16.dp))
+        HomepageSortOption(selectedSortOption, selectedSortDirection) { s, d ->
+            setSetting(settings, Setting.HOMEPAGE_SORT_KEY)(s)
+            setSetting(settings, Setting.HOMEPAGE_SORT_DIRECTION)(d)
+        }
         Spacer(modifier = Modifier.padding(16.dp))
         SaveFileManagement(saveFile)
         Spacer(modifier = Modifier.padding(16.dp))
@@ -97,6 +114,84 @@ fun ColourSchemeDropdown(selectedScheme: State<String>, onChange: (s: String) ->
                         dropdownExpanded = false
                         onChange(scheme.name)
                     }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomepageSortOption(
+    selectedSortOption: State<String>,
+    selectedSortDirection: State<String>,
+    onChange: (s: String, d: String) -> Unit
+) {
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
+    Column {
+        Text("Homepage sort options:", style = MaterialTheme.typography.titleMedium)
+
+        Spacer(Modifier.padding(4.dp))
+
+        ExposedDropdownMenuBox(
+            expanded = dropdownExpanded,
+            onExpandedChange = { dropdownExpanded = !dropdownExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = SortOption.valueOf(selectedSortOption.value).displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Sort key") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedLabelColor = MaterialTheme.colorScheme.outline,
+                )
+            )
+            ExposedDropdownMenu(
+                expanded = dropdownExpanded,
+                onDismissRequest = { dropdownExpanded = false }
+            ) {
+                SortOption.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.displayName) },
+                        onClick = {
+                            dropdownExpanded = false
+                            onChange(option.name, selectedSortDirection.value)
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.padding(4.dp))
+
+        Text("Sort direction:", style = MaterialTheme.typography.titleSmall)
+        SortDirection.entries.forEach { direction ->
+            Row(
+                Modifier
+                    .selectable(
+                        selected = (direction.name == selectedSortDirection.value),
+                        onClick = {
+                            onChange(selectedSortOption.value, direction.name)
+                        }, role = Role.RadioButton
+                    )
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            ) {
+                RadioButton(
+                    selected = (direction.name == selectedSortDirection.value),
+                    onClick = null, // recommended by google for accessibility reasons
+                    // https://developer.android.com/develop/ui/compose/components/radio-button#key-points
+                    colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.onPrimary)
+                )
+                Text(
+                    text = direction.displayName,
+                    modifier = Modifier.padding(start = 16.dp)
                 )
             }
         }
