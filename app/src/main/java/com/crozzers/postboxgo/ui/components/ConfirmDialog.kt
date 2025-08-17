@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -14,7 +15,6 @@ fun ConfirmDialog(
     body: String = "This action cannot be undone",
     callback: (state: Boolean) -> Unit
 ) {
-    // TODO: fix in light/dark mode
     AlertDialog(
         icon = {
             Icon(
@@ -45,5 +45,8 @@ fun ConfirmDialog(
         onDismissRequest = {
             callback(false)
         },
+        titleContentColor = MaterialTheme.colorScheme.primary,
+        textContentColor = MaterialTheme.colorScheme.primary,
+        iconContentColor = MaterialTheme.colorScheme.primary,
     )
 }
