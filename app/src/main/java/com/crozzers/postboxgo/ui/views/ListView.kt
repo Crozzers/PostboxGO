@@ -109,7 +109,7 @@ fun ListView(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
             items(filteredAndSortedPostboxes) { postbox ->
                 PostboxCard(postbox, onItemClick)
