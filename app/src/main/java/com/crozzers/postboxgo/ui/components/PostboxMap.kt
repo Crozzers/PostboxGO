@@ -3,16 +3,13 @@ package com.crozzers.postboxgo.ui.components
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.DetailedPostboxInfo
-import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.Postbox
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
@@ -33,7 +30,7 @@ import com.google.maps.android.compose.MarkerState
  */
 @Composable
 fun PostboxMap(
-    postboxes: List<Postbox>,
+    postboxes: Collection<Postbox>,
     modifier: Modifier = Modifier,
     enableGestures: Boolean = true,
     locationClient: FusedLocationProviderClient? = null,

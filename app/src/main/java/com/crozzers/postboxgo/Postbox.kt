@@ -52,7 +52,7 @@ data class Postbox(
 data class PostOfficeDetails(
     /** Name of the postbox */
     val name: String,
-    /* Postbox number. Combine with postcode to get unique ID */
+    /** Postbox number. Combine with postcode to get unique ID */
     val address1: String,
     /** Usually the postbox type */
     val address3: String,

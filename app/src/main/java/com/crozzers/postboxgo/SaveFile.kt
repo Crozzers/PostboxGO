@@ -12,6 +12,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -19,19 +21,19 @@ import java.time.format.DateTimeFormatter
 const val LOG_TAG = "SaveFile"
 
 class SaveFile(private val context: Context) {
-    private var data: SaveData
+    private var data: SaveDataV2
     private var fileName = "save.json"
 
     init {
         val file = File(context.filesDir, fileName)
         data = if (file.exists()) {
             try {
-                Json.decodeFromString<SaveData>(file.readText())
+                decode(file.readText())
             } catch (e: SerializationException) {
-                SaveData(1, mutableListOf<Postbox>())
+                SaveDataV2(2, mutableMapOf<String, Postbox>())
             }
         } else {
-            SaveData(1, mutableListOf<Postbox>())
+            SaveDataV2(2, mutableMapOf<String, Postbox>())
         }
     }
 
@@ -40,21 +42,21 @@ class SaveFile(private val context: Context) {
         file.writeText(Json.encodeToString(data))
     }
 
-    fun getPostboxes(): List<Postbox> {
+    fun getPostboxes(): MutableMap<String, Postbox> {
         return data.postboxes
     }
 
     fun getPostbox(id: String): Postbox? {
-        return data.postboxes.find { it.id == id }
+        return data.postboxes[id]
     }
 
     fun addPostbox(postbox: Postbox) {
-        data.postboxes.add(postbox)
+        data.postboxes[postbox.id] = postbox
         save()
     }
 
     fun removePostbox(postbox: Postbox) {
-        if (data.postboxes.remove(postbox)) {
+        if (data.postboxes.remove(postbox.id) != null) {
             save()
         }
     }
@@ -115,7 +117,7 @@ class SaveFile(private val context: Context) {
             Log.w(LOG_TAG, "Failed to import savefile - empty file")
         } else {
             try {
-                data = Json.decodeFromString<SaveData>(contents)
+                data = decode(contents)
                 Log.i(LOG_TAG, "Imported savefile $uri - ${getPostboxes().size}")
                 Toast.makeText(context, "Imported savefile", Toast.LENGTH_SHORT).show()
             } catch (e: SerializationException) {
@@ -126,7 +128,29 @@ class SaveFile(private val context: Context) {
 
         }
     }
+
+    fun decode(contents: String): SaveDataV2 {
+        val data = Json.decodeFromString<SaveData>(contents)
+        return if (data.version == 1) {
+            SaveDataV2(
+                2,
+                Json.decodeFromJsonElement<MutableList<Postbox>>(data.postboxes)
+                    .associateBy { it.id }.toMutableMap()
+            )
+        } else {
+            SaveDataV2(
+                data.version,
+                Json.decodeFromJsonElement<MutableMap<String, Postbox>>(data.postboxes)
+            )
+        }
+    }
 }
 
 @Serializable
-data class SaveData(val version: Int, val postboxes: MutableList<Postbox>)
+data class SaveData(val version: Int, val postboxes: JsonElement)
+
+@Serializable
+data class SaveDataV2(val version: Int, val postboxes: MutableMap<String, Postbox>)
+
+@Serializable
+data class SaveDataV1(val version: Int, val postboxes: MutableList<Postbox>)

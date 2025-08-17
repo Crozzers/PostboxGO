@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,20 +40,21 @@ import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationToken
-import com.google.maps.android.compose.MapUiSettings
-import java.time.LocalDateTime
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
-fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbox) -> Unit) {
+fun AddPostbox(
+    locationClient: FusedLocationProviderClient,
+    saveFile: SaveFile,
+    callback: (p: Postbox) -> Unit
+) {
     var selectedPostbox by remember { mutableStateOf<DetailedPostboxInfo?>(null) }
     var selectedMonarch by remember { mutableStateOf(Monarch.NONE) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -86,7 +85,8 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
             Configuration.ORIENTATION_PORTRAIT -> {
                 SelectPostbox(
                     locationClient,
-                    selectedPostbox
+                    selectedPostbox,
+                    saveFile
                 ) { p ->
                     selectedPostbox = p
                 }
@@ -110,7 +110,7 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
             else -> {
                 Row(Modifier.padding(8.dp)) {
                     Column(Modifier.fillMaxWidth(0.5f)) {
-                        SelectPostbox(locationClient, selectedPostbox) { p ->
+                        SelectPostbox(locationClient, selectedPostbox, saveFile) { p ->
                             selectedPostbox = p
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -168,6 +168,7 @@ fun AddPostbox(locationClient: FusedLocationProviderClient, callback: (p: Postbo
 fun SelectPostbox(
     locationClient: FusedLocationProviderClient,
     selectedPostbox: DetailedPostboxInfo?,
+    saveFile: SaveFile,
     selectionCallback: (p: DetailedPostboxInfo) -> Unit
 ) {
     var postboxDropdownExpanded by remember { mutableStateOf(false) }
@@ -178,7 +179,10 @@ fun SelectPostbox(
     getLocation(LocalContext.current, locationClient) { location ->
         getNearbyPostboxes(context, location) { postboxes ->
             nearbyPostboxes.clear()
-            nearbyPostboxes.addAll(postboxes)
+            nearbyPostboxes.addAll(postboxes.filter { pb ->
+                val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
+                saveFile.getPostbox(id) == null
+            })
         }
     }
 
@@ -226,7 +230,7 @@ fun SelectPostbox(
             if (nearbyPostboxes.isEmpty()) {
                 DropdownMenuItem(
                     text = { Text("Getting location...") },
-                    onClick = {  },
+                    onClick = { },
                     enabled = false
                 )
             }
@@ -280,25 +284,27 @@ fun getLocation(
     locationClient: FusedLocationProviderClient,
     callback: (l: Location) -> Unit
 ) {
-    locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).addOnCompleteListener { task ->
-        if (task.isSuccessful && task.result != null) {
-            callback(task.result)
-        } else {
-            Toast.makeText(context, "Determining last known location...", Toast.LENGTH_SHORT).show()
-            locationClient.lastLocation
-                .addOnCompleteListener { subtask ->
-                    if (subtask.isSuccessful && subtask.result != null) {
-                        callback(subtask.result)
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Failed to get current location",
-                            Toast.LENGTH_SHORT
-                        ).show()
+    locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful && task.result != null) {
+                callback(task.result)
+            } else {
+                Toast.makeText(context, "Determining last known location...", Toast.LENGTH_SHORT)
+                    .show()
+                locationClient.lastLocation
+                    .addOnCompleteListener { subtask ->
+                        if (subtask.isSuccessful && subtask.result != null) {
+                            callback(subtask.result)
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Failed to get current location",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                }
+            }
         }
-    }
 }
 
 

@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 
 @Composable
 fun ListView(
-    postboxes: List<Postbox>,
+    postboxes: MutableMap<String, Postbox>,
     onItemClick: (postbox: Postbox) -> Unit
 ) {
     // TODO: enable grid view in landscape
@@ -31,7 +31,7 @@ fun ListView(
             .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        items(postboxes.sortedBy {
+        items(postboxes.values.sortedBy {
             LocalDateTime.parse(it.dateRegistered)
         }.reversed()) { postbox ->
             PostboxCard(postbox, onItemClick)

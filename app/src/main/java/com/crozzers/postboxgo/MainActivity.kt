@@ -94,13 +94,13 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(NavigationItem.MapView.route) {
                             PostboxMap(
-                                (applicationContext as App).saveFile.getPostboxes(),
+                                (applicationContext as App).saveFile.getPostboxes().values,
                                 Modifier.fillMaxSize(),
                                 onPostboxClick = { p -> navController.navigate("${NavigationItem.ViewPostbox.route}/${p.id}") }
                             )
                         }
                         composable(NavigationItem.AddPostbox.route) {
-                            AddPostbox(locationClient, { p ->
+                            AddPostbox(locationClient,(applicationContext as App).saveFile, { p ->
                                 (applicationContext as App).saveFile.addPostbox(p);
                                 navController.navigate(NavigationItem.ListView.route)
                             })
