@@ -70,6 +70,28 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
 
+  extract_release_notes:
+    runs-on: ubuntu-latest
+    needs: [bump_version]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
+
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v2
+        with:
+          changelog_file: CHANGELOG.md
+          release_notes_file: whatsnew-en-GB.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: whatsnew-en-GB.md
+
   build_aab:
     needs: [bump_version]
     runs-on: ubuntu-latest
@@ -110,14 +132,20 @@ jobs:
 
   release_aab:
     if: ${{ inputs.playstore }}
-    needs: [build_aab]
+    needs: [extract_release_notes, build_aab]
     runs-on: ubuntu-latest
     environment: release-env
     steps:
-      - name: Download artifact
+      - name: Download AAB
         uses: actions/download-artifact@v4
         with:
           name: app-bundle
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: whatsnew
 
       - name: Publish to Play Store
         uses: r0adkll/upload-google-play@v1
@@ -127,34 +155,35 @@ jobs:
           releaseFiles: ${{ github.workspace }}/app-release.aab
           track: ${{ inputs.track }}
           status: ${{ inputs.draft == true && 'draft' || 'completed' }}
+          whatsNewDirectory: whatsnew/
 
   release_github:
     if: ${{ inputs.ghRelease }}
     runs-on: ubuntu-latest
     environment: release-env
-    needs: [bump_version, release_aab]
+    needs: [bump_version, extract_release_notes, release_aab]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
 
-      - name: Download artifact
+      - name: Download AAB
         uses: actions/download-artifact@v4
         with:
           name: app-bundle
           path: dist
 
-      - name: Extract release notes
-        id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v2
+      - name: Download release notes
+        uses: actions/download-artifact@v4
         with:
-          changelog_file: CHANGELOG.md
+          name: release-notes
+          path: whatsnew
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          body: ${{ steps.extract-release-notes.outputs.release_notes }}
+          body_path: whatsnew/whatsnew-en-GB.md
           draft: false
           files: dist/*
           name: v${{ inputs.version }}
