@@ -84,13 +84,13 @@ jobs:
         uses: ffurrer2/extract-release-notes@v2
         with:
           changelog_file: CHANGELOG.md
-          release_notes_file: whatsnew-en-GB.md
+          release_notes_file: whatsnew-en-GB
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
-          path: whatsnew-en-GB.md
+          path: whatsnew-en-GB
 
   build_aab:
     needs: [bump_version]
@@ -183,7 +183,7 @@ jobs:
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: whatsnew/whatsnew-en-GB.md
+          body_path: whatsnew/whatsnew-en-GB
           draft: false
           files: dist/*
           name: v${{ inputs.version }}
