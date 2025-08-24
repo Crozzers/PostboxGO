@@ -1,0 +1,62 @@
+name: Build
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to checkout
+        type: string
+        required: false
+  workflow_call:
+    inputs:
+      version:
+        description: The version to checkout
+        type: string
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ ! inputs.version && env.GITHUB_REF_NAME || inputs.version }}
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build AAB
+        run: ./gradlew bundleRelease
+        continue-on-error: false
+
+      - name: Build APK
+        run: ./gradlew assembleRelease
+        continue-on-error: false
+
+      - name: Rename files
+        run: |
+          version=$(grep "versionName = " ./app/build.gradle.kts | tr -d ' "' | cut -d "=" -f 2)
+          mkdir dist
+          mv app/build/outputs/bundle/release/app-release.aab dist/PostboxGO_$version.aab
+          mv app/release/app-release.apk dist/PostboxGO_$version.apk
+
+      - name: Sign AAB
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: dist/
+          signingKeyBase64: ${{ secrets.KEYSTORE_B64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: dist/PostboxGO_*
