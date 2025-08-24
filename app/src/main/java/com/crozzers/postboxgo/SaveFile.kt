@@ -118,6 +118,7 @@ class SaveFile(private val context: Context) {
         } else {
             try {
                 data = decode(contents)
+                save()  // save after to make sure changes apply
                 Log.i(LOG_TAG, "Imported savefile $uri - ${getPostboxes().size}")
                 Toast.makeText(context, "Imported savefile", Toast.LENGTH_SHORT).show()
             } catch (e: SerializationException) {
