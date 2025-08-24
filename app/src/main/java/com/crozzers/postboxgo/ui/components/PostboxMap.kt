@@ -101,6 +101,10 @@ fun PostboxMap(
                 snippet = if (onPostboxClick != null) "Click for details" else null
             )
         }
+        if (postboxes.isEmpty()) {
+            // mail rail location
+            boundsBuilder.include(LatLng(51.52461615735085, -0.11318969493024554))
+        }
         cameraPosState.move(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 150))
     }
 }
