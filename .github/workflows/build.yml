@@ -43,12 +43,12 @@ jobs:
         run: ./gradlew assembleRelease
         continue-on-error: false
 
-      - name: Rename files
+      - name: Collect files
         run: |
           version=$(grep "versionName = " ./app/build.gradle.kts | tr -d ' "' | cut -d "=" -f 2)
           mkdir dist
-          mv app/build/outputs/bundle/release/app-release.aab dist/PostboxGO_$version.aab
-          mv app/build/outputs/apk/release/app-release-unsigned.apk dist/PostboxGO_$version.apk
+          mv app/build/outputs/bundle/release/app-release.aab dist/
+          mv app/build/outputs/apk/release/app-release-unsigned.apk dist/
 
       - name: Sign release files
         uses: r0adkll/sign-android-release@v1
@@ -63,8 +63,17 @@ jobs:
           # see https://github.com/r0adkll/sign-android-release/issues/97
           BUILD_TOOLS_VERSION: "34.0.0"
 
+      - name: Rename files
+        run: |
+          ls -R dist
+          version=$(grep "versionName = " ./app/build.gradle.kts | tr -d ' "' | cut -d "=" -f 2)
+          # move to new dir to exclude all the intermediate APKs the signing process generates
+          mkdir artifact
+          mv dist/app-release.aab artifact/PostboxGO_$version.aab
+          mv dist/app-release-signed.apk artifact/PostboxGO_$version.apk
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-build
-          path: dist/PostboxGO_*
+          path: artifact/PostboxGO_*
