@@ -92,7 +92,7 @@ jobs:
           name: release-notes
           path: whatsnew-en-GB
 
-  build_aab:
+  build:
     needs: [bump_version]
     runs-on: ubuntu-latest
     steps:
@@ -114,11 +114,21 @@ jobs:
         run: ./gradlew bundleRelease
         continue-on-error: false
 
-      - name: Sign release
-        id: sign
+      - name: Build APK
+        run: ./gradlew assembleRelease
+        continue-on-error: false
+
+      - name: Rename files
+        run: |
+          version=$(grep "versionName = " ./app/build.gradle.kts | tr -d ' "' | cut -d "=" -f 2)
+          mkdir dist
+          mv app/build/outputs/bundle/release/app-release.apk dist/PostboxGO_$version.aab
+          mv app/release/app-release.apk dist/PostboxGO_$version.apk
+
+      - name: Sign AAB
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/bundle/release
+          releaseDirectory: dist/
           signingKeyBase64: ${{ secrets.KEYSTORE_B64 }}
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
@@ -127,19 +137,19 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-bundle
-          path: app/build/outputs/bundle/release/app-release.aab
+          name: app-build
+          path: dist/PostboxGO_*
 
   release_aab:
     if: ${{ inputs.playstore }}
-    needs: [extract_release_notes, build_aab]
+    needs: [extract_release_notes, build]
     runs-on: ubuntu-latest
     environment: release-env
     steps:
       - name: Download AAB
         uses: actions/download-artifact@v4
         with:
-          name: app-bundle
+          name: app-build
 
       - name: Download release notes
         uses: actions/download-artifact@v4
@@ -152,7 +162,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.crozzers.postboxgo
-          releaseFiles: ${{ github.workspace }}/app-release.aab
+          releaseFiles: ${{ github.workspace }}/PostboxGO_*.aab
           track: ${{ inputs.track }}
           status: ${{ inputs.draft == true && 'draft' || 'completed' }}
           whatsNewDirectory: whatsnew/
@@ -168,10 +178,10 @@ jobs:
         with:
           ref: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
 
-      - name: Download AAB
+      - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: app-bundle
+          name: app-build
           path: dist
 
       - name: Download release notes

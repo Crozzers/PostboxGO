@@ -21,3 +21,4 @@ google-services.json
 *.hprof
 *.jar
 *secrets*
+app/release
