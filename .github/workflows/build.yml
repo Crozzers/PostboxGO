@@ -50,7 +50,7 @@ jobs:
           mv app/build/outputs/bundle/release/app-release.aab dist/PostboxGO_$version.aab
           mv app/build/outputs/apk/release/app-release-unsigned.apk dist/PostboxGO_$version.apk
 
-      - name: Sign AAB
+      - name: Sign release files
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: dist/
@@ -58,6 +58,10 @@ jobs:
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        env:
+          # fix "cannot find android build tools" error
+          # see https://github.com/r0adkll/sign-android-release/issues/97
+          BUILD_TOOLS_VERSION: "34.0.0"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
