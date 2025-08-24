@@ -96,7 +96,7 @@ jobs:
     needs: [bump_version]
     uses: ./.github/workflows/build.yml
     with:
-      version: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
+      version: ${{ inputs.bumpVersion == true && inputs.version || null }}
 
   release_aab:
     if: ${{ inputs.playstore }}

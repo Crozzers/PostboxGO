@@ -22,6 +22,10 @@ jobs:
         with:
           ref: ${{ ! inputs.version && env.GITHUB_REF_NAME || inputs.version }}
 
+      - name: Inject API Keys
+        run: |
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> secrets.properties
+
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -44,7 +48,7 @@ jobs:
           version=$(grep "versionName = " ./app/build.gradle.kts | tr -d ' "' | cut -d "=" -f 2)
           mkdir dist
           mv app/build/outputs/bundle/release/app-release.aab dist/PostboxGO_$version.aab
-          mv app/release/app-release.apk dist/PostboxGO_$version.apk
+          mv app/build/outputs/apk/release/app-release-unsigned.apk dist/PostboxGO_$version.apk
 
       - name: Sign AAB
         uses: r0adkll/sign-android-release@v1
