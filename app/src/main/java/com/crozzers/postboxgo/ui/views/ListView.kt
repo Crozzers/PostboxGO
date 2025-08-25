@@ -58,6 +58,8 @@ fun ListView(
 
     val filteredAndSortedPostboxes = postboxes.values.filter {
         humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
+                // remove spaces for ID because going back and adding a space to your search query would be annoying
+                it.id.replace(" ", "").contains(searchQuery.replace(" ", ""), ignoreCase = true) ||
                 it.type?.contains(searchQuery, ignoreCase = true) == true ||
                 it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
                 humanReadableDate(it.dateRegistered).contains(searchQuery, ignoreCase = true)
@@ -66,6 +68,7 @@ fun ListView(
         compareBy {
             when (SortOption.valueOf(sortOption.value)) {
                 SortOption.NAME -> humanReadablePostboxName(it.name)
+                SortOption.ID -> it.id
                 SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
                 SortOption.TYPE -> it.type
                 SortOption.MONARCH -> it.monarch.displayName
@@ -120,6 +123,7 @@ fun ListView(
 
 enum class SortOption(val displayName: String) {
     NAME("Name"),
+    ID("ID"),
     DATE("Date"),
     TYPE("Type"),
     MONARCH("Monarch"),
@@ -141,8 +145,14 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
         Column(Modifier.padding(8.dp)) {
+            var id = ""
+            // don't show UUIDs in the homepage. They are long and ugly.
+            // This is also a hangover from v1 savefiles, which didn't use the proper IDs
+            if (!"[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
+                id = " (${postbox.id})"
+            }
             Text(
-                text = "Name: ${humanReadablePostboxName(postbox.name)}",
+                text = "Name: ${humanReadablePostboxName(postbox.name)}$id",
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
             Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)

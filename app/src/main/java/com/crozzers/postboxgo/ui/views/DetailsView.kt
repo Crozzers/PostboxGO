@@ -62,7 +62,8 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                 PostboxDetails(postbox)
                 PostboxMap(postbox, Modifier.fillMaxHeight(0.75f))
                 ActionButtons(
-                    postbox.coords
+                    postbox.coords,
+                    Modifier.height(16.dp)
                 ) { state ->
                     if (state) {
                         saveFile.removePostbox(postbox)
@@ -85,7 +86,8 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                 ) {
                     PostboxDetails(postbox)
                     ActionButtons(
-                        postbox.coords
+                        postbox.coords,
+                        Modifier.height(6.dp)
                     ) { state ->
                         if (state) {
                             saveFile.removePostbox(postbox)
@@ -107,6 +109,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 fun PostboxDetails(postbox: Postbox) {
     Text(text = humanReadablePostboxName(postbox.name), fontSize = 24.sp)
     Text(text = "Registered: ${humanReadableDate(postbox.dateRegistered)}", fontSize = 12.sp)
+    Text(text = "ID: ${postbox.id}")
     Text(text = "Type: ${postbox.type ?: "Unknown"}")
     Text(text = "Monarch: ${postbox.monarch.displayName}")
     Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
@@ -114,11 +117,11 @@ fun PostboxDetails(postbox: Postbox) {
 
 
 @Composable
-fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Unit) {
+fun ActionButtons(coords: Pair<Float, Float>, modifier: Modifier = Modifier, deleteCallback: (s: Boolean) -> Unit) {
     val context = LocalContext.current
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
 
-    Spacer(Modifier.height(16.dp))
+    Spacer(modifier)
     Button({
         context.startActivity(
             Intent(
@@ -132,7 +135,7 @@ fun ActionButtons(coords: Pair<Float, Float>, deleteCallback: (s: Boolean) -> Un
             Text(text = "Get Directions")
         }
     }
-    Spacer(Modifier.height(16.dp))
+    Spacer(modifier)
     OutlinedButton(
         {
             openConfirmDeleteDialog.value = true
