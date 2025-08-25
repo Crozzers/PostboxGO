@@ -6,9 +6,9 @@ TAG_PREFIX="$2"
 prevVersion=$(
     cat CHANGELOG.md | \
     # get lines with version nums on them
-    grep '## \[[0-9].*\] - [0-9]\{4\}\(-[0-9]\{2\}\)\{2\}' | \
+    grep '## \[[0-9]\.[0-9]\.[0-9]\(-\(alpha\|beta\|rc\)\(\.[0-9]\)\?\)\?\] - [0-9]\{4\}\(-[0-9]\{2\}\)\{2\}' | \
     # extract version number
-    grep -o '[0-9]\+\(\.[0-9]\+\)\{2\}' | \
+    grep -o '[0-9]\.[0-9]\.[0-9]\(-\(alpha\|beta\|rc\)\(\.[0-9]\)\?\)\?' | \
     # get latest one
     head -n 1
 )
