@@ -9,6 +9,8 @@ import com.crozzers.postboxgo.DetailedPostboxInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
@@ -26,6 +28,8 @@ private val JsonParser: Json by lazy {
     }
 }
 
+private val cacheFileMutex = Mutex()
+
 fun getNearbyPostboxes(
     context: Context,
     location: Location,
@@ -41,24 +45,24 @@ fun getNearbyPostboxes(
     }
     val postcode = addresses[0].postalCode
 
-    var postboxData: List<DetailedPostboxInfo>? = getPostboxesFromCache(context, postcode)
-    if (postboxData != null) {
-        callback(postboxData)
-        return
-    }
-
-    // I did ask Royal Mail if I could use their official API and they said:
-    // "...you need to be sending 150 items per day to qualify for API..."
-    // I am not sending anything, I just want access to the postbox data :(
-    val url = URL(
-        "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
-                // for some reason setting the searchRadius at 40 yields more postboxes
-                // even when they aren't outside that radius
-                "?postCode=${postcode}&searchRadius=40&count=10" +
-                "&officeType=postboxes&type=2&appliedFilters=null"
-    )
-
     CoroutineScope(Dispatchers.IO).launch {
+        var postboxData: List<DetailedPostboxInfo>? = getPostboxesFromCache(context, postcode)
+        if (postboxData != null) {
+            callback(postboxData)
+            return@launch
+        }
+
+        // I did ask Royal Mail if I could use their official API and they said:
+        // "...you need to be sending 150 items per day to qualify for API..."
+        // I am not sending anything, I just want access to the postbox data :(
+        val url = URL(
+            "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
+                    // for some reason setting the searchRadius at 40 yields more postboxes
+                    // even when they aren't outside that radius
+                    "?postCode=${postcode}&searchRadius=40&count=10" +
+                    "&officeType=postboxes&type=2&appliedFilters=null"
+        )
+
         with(url.openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             setRequestProperty(
@@ -100,17 +104,20 @@ private const val CACHE_FILE = "nearby_postboxes_cache.json"
 private const val CACHE_EXPIRATION_TIME: Long = 60 * 60 * 24 * 30  // 30 days
 
 
-fun getPostboxesFromCache(context: Context, postcode: String): List<DetailedPostboxInfo>? {
-    val file = File(context.filesDir, CACHE_FILE)
-    if (!file.exists()) {
-        return null
-    }
+suspend fun getPostboxesFromCache(context: Context, postcode: String): List<DetailedPostboxInfo>? {
     var cachedData: Map<String, CachedPostboxDetails>
-    try {
-        cachedData = Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
-    } catch (e: SerializationException) {
-        Log.w(LOG_TAG, "Failed to parse existing cache data", e)
-        return null
+
+    cacheFileMutex.withLock {
+        val file = File(context.filesDir, CACHE_FILE)
+        if (!file.exists()) {
+            return null
+        }
+        try {
+            cachedData = Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
+        } catch (e: SerializationException) {
+            Log.w(LOG_TAG, "Failed to parse existing cache data", e)
+            return null
+        }
     }
 
     for (data in cachedData) {
@@ -133,32 +140,55 @@ fun getPostboxesFromCache(context: Context, postcode: String): List<DetailedPost
  * Cache the postbox data for the given postcode.
  * This function also removes any stale entries at the same time
  */
-fun cachePostboxData(context: Context, postcode: String, postboxData: List<DetailedPostboxInfo>) {
-    val file = File(context.filesDir, CACHE_FILE)
-    val existingData = mutableMapOf<String, CachedPostboxDetails>()
-    if (file.exists()) {
-        try {
-            existingData += Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
-        } catch (e: SerializationException) {
-            Log.w(LOG_TAG, "Failed to parse existing cache data", e)
+suspend fun cachePostboxData(context: Context, postcode: String, postboxData: List<DetailedPostboxInfo>) {
+    cacheFileMutex.withLock {
+        val file = File(context.filesDir, CACHE_FILE)
+        val existingData = mutableMapOf<String, CachedPostboxDetails>()
+        if (file.exists()) {
+            try {
+                existingData += Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
+            } catch (e: SerializationException) {
+                Log.w(LOG_TAG, "Failed to parse existing cache data", e)
+            }
         }
-    }
-    // filter out any expired entries
-    val currentTime = (System.currentTimeMillis() / 1000)
-    existingData.keys.removeAll {
-        existingData[it]!!.lastFetch + CACHE_EXPIRATION_TIME < currentTime
-    }
+        existingData[postcode] = CachedPostboxDetails((System.currentTimeMillis() / 1000), postboxData)
 
-    existingData[postcode] = CachedPostboxDetails(currentTime, postboxData)
-
-    file.writeText(JsonParser.encodeToString(existingData))
+        file.writeText(JsonParser.encodeToString(existingData))
+    }
     Log.i(LOG_TAG, "Cached new entry for $postcode")
 }
 
-fun clearPostboxData(context: Context): Boolean {
-    val file = File(context.filesDir, CACHE_FILE)
-    if (file.exists()) {
-        return file.delete();
+suspend fun clearPostboxData(context: Context): Boolean {
+    cacheFileMutex.withLock {
+        val file = File(context.filesDir, CACHE_FILE)
+        if (file.exists()) {
+            return file.delete();
+        }
     }
     return false;
+}
+
+suspend fun removeStaleCachedPostboxData(context: Context) {
+    cacheFileMutex.withLock {
+        val file = File(context.filesDir, CACHE_FILE)
+        val existingData = mutableMapOf<String, CachedPostboxDetails>()
+        if (file.exists()) {
+            try {
+                existingData += Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
+            } catch (e: SerializationException) {
+                Log.w(LOG_TAG, "Failed to parse existing cache data", e)
+            }
+        }
+        if (existingData.isEmpty()) {
+            return
+        }
+        // filter out any expired entries
+        val currentTime = (System.currentTimeMillis() / 1000)
+        val prevSize = existingData.size
+        existingData.keys.removeAll {
+            existingData[it]!!.lastFetch + CACHE_EXPIRATION_TIME < currentTime
+        }
+        file.writeText(JsonParser.encodeToString(existingData))
+        Log.i(LOG_TAG, "Removed ${prevSize - existingData.size} stale cache entries")
+    }
 }

@@ -41,7 +41,10 @@ import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
 import com.crozzers.postboxgo.utils.clearPostboxData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 const val LOG_TAG = "SettingsView"
 
@@ -229,7 +232,9 @@ fun SaveFileManagement(saveFile: SaveFile) {
 fun ClearPBCacheButton(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     Button(onClick = {
-        clearPostboxData(context)
+        CoroutineScope(Dispatchers.IO).launch {
+            clearPostboxData(context)
+        }
         Toast.makeText(context, "Postbox cache cleared", Toast.LENGTH_SHORT).show()
     }) { Text("Clear nearby postbox cache") }
 }

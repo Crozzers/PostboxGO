@@ -62,7 +62,14 @@ Our lawful bases for collecting or using personal information for **locating nea
 
 ## How long we keep information
 
-PostboxGO does not store or retain the information in any way.
+The user's GPS location is used to determine the postcode. The user's precise location is only used
+for this purpose and is not stored or retained afterwards. The postcode, along with a list of
+nearby postboxes, may be cached locally on the device for up to 30 days in order to
+improve app performance. Cache entries are automatically removed after this period, and you can
+clear your cache at any time in the app's settings.
+
+For more information on how long we store your personal information or the criteria we use to
+determine this please contact us using the details provided above.
 
 ## Who we share the information with
 
@@ -89,4 +96,4 @@ Website: https://www.ico.org.uk/make-a-complaint
 
 ## Last updated
 
-16th August 2025
+25th August 2025

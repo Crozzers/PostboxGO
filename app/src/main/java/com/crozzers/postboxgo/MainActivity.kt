@@ -27,8 +27,12 @@ import com.crozzers.postboxgo.ui.views.AddPostbox
 import com.crozzers.postboxgo.ui.views.DetailsView
 import com.crozzers.postboxgo.ui.views.ListView
 import com.crozzers.postboxgo.ui.views.SettingsView
+import com.crozzers.postboxgo.utils.removeStaleCachedPostboxData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class App : Application() {
     lateinit var saveFile: SaveFile
@@ -37,6 +41,10 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         saveFile = SaveFile(this)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            removeStaleCachedPostboxData(applicationContext)
+        }
     }
 }
 
@@ -100,7 +108,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(NavigationItem.AddPostbox.route) {
                             AddPostbox(locationClient, (applicationContext as App).saveFile, { p ->
-                                (applicationContext as App).saveFile.addPostbox(p);
+                                (applicationContext as App).saveFile.addPostbox(p)
                                 navController.navigate(NavigationItem.ListView.route)
                             })
                         }
