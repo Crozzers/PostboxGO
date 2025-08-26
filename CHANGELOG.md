@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Fix text overflowing on homepage
 
 ## [1.0.0-alpha.1] - 2025-08-25
 

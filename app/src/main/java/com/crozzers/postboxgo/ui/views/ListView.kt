@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.Setting
@@ -153,16 +154,22 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             }
             Text(
                 text = "Name: ${humanReadablePostboxName(postbox.name)}$id",
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            Text(text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant)
+            Text(
+                text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
             Text(
                 text = "Monarch: ${postbox.monarch.displayName}",
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "Registered: ${humanReadableDate(postbox.dateRegistered)}",
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
             )
         }
     }
