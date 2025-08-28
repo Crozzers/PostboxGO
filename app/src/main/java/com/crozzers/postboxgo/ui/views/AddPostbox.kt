@@ -1,9 +1,7 @@
 package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
-import android.content.Context
 import android.content.res.Configuration
-import android.location.Location
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
@@ -42,10 +40,10 @@ import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.Priority
 import kotlin.uuid.ExperimentalUuidApi
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -177,13 +175,18 @@ fun SelectPostbox(
     val nearbyPostboxes = remember { mutableStateListOf<DetailedPostboxInfo>() }
     // store here to pass to other stuff. Hacky but true
     val context = LocalContext.current
-    getLocation(LocalContext.current, locationClient) { location ->
-        getNearbyPostboxes(context, location) { postboxes ->
-            nearbyPostboxes.clear()
-            nearbyPostboxes.addAll(postboxes.filter { pb ->
-                val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
-                saveFile.getPostbox(id) == null
-            })
+    getLocation(locationClient) { location ->
+        if (location == null) {
+            Toast.makeText(context, "Failed to determine current location", Toast.LENGTH_SHORT)
+                .show()
+        } else {
+            getNearbyPostboxes(context, location) { postboxes ->
+                nearbyPostboxes.clear()
+                nearbyPostboxes.addAll(postboxes.filter { pb ->
+                    val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
+                    saveFile.getPostbox(id) == null
+                })
+            }
         }
     }
 
@@ -277,35 +280,6 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
             }
         }
     }
-}
-
-@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-fun getLocation(
-    context: Context,
-    locationClient: FusedLocationProviderClient,
-    callback: (l: Location) -> Unit
-) {
-    locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful && task.result != null) {
-                callback(task.result)
-            } else {
-                Toast.makeText(context, "Determining last known location...", Toast.LENGTH_SHORT)
-                    .show()
-                locationClient.lastLocation
-                    .addOnCompleteListener { subtask ->
-                        if (subtask.isSuccessful && subtask.result != null) {
-                            callback(subtask.result)
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Failed to get current location",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-            }
-        }
 }
 
 

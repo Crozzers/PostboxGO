@@ -46,7 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-const val LOG_TAG = "SettingsView"
+private const val LOG_TAG = "SettingsView"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
