@@ -1,7 +1,6 @@
 #!/bin/bash
 
 version="$1"
-TAG_PREFIX="$2"
 
 prevVersion=$(
     cat CHANGELOG.md | \
@@ -13,26 +12,19 @@ prevVersion=$(
     head -n 1
 )
 
-# add new header for new version
-awk -v version="$version" -v date="$(date +'%Y-%m-%d')" '
-    1;/## \[Unreleased\]/{ print "\n\n## [" version "] - " date }
-' CHANGELOG.md > CHANGELOG.md.temp
+changes=$(npx conventional-changelog-cli -p angular -r 1 | tail -n +3)
+
+# add latest version
+echo "## [$version] - $(date +'%Y-%m-%d')" >> CHANGELOG.md.temp
+echo "$changes" | tee -a CHANGELOG.md.temp
+echo "" | tee -a CHANGELOG.md.temp  # add some whitespace
+echo "" | tee -a CHANGELOG.md.temp
+tee -a CHANGELOG.md.temp < CHANGELOG.md
 
 mv CHANGELOG.md.temp CHANGELOG.md
 
 # update links
-sed -ri 's|(\[unreleased\]: .*compare\/'$TAG_PREFIX')(.*)(\.\.\.HEAD)|\1'$version'\3|g' CHANGELOG.md
-
-awk -v prev="$TAG_PREFIX$prevVersion" \
-    -v prefix="$TAG_PREFIX" \
-    -v version="$version" \
-    -v repo="$GITHUB_REPOSITORY" '
-    1;/\[unreleased\]: /{
-        print "[" version "]: https://github.com/Crozzers/PostboxGO/compare/" prev "..." prefix version
-    }
-    ' CHANGELOG.md > CHANGELOG.md.temp
-
-mv CHANGELOG.md.temp CHANGELOG.md
+echo "[$version]: https://github.com/$GITHUB_REPOSITORY/compare/$prevVersion...$version" | tee -a CHANGELOG.md
 
 echo "new changelog:"
 echo "--------------"

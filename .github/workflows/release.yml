@@ -53,16 +53,6 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
 
-      - name: Parse commits
-        run: |
-          changes=$(npx conventional-changelog-cli -p angular -r 1 | tail -n +3)
-          echo "## [Unreleased]" >> CHANGELOG-new.md
-          echo "$changes" | tee -a CHANGELOG-new.md
-          echo "" | tee -a CHANGELOG-new.md  # add some whitespace
-          echo "" | tee -a CHANGELOG-new.md
-          cat CHANGELOG.md | tee -a CHANGELOG-new.md
-          mv CHANGELOG-new.md CHANGELOG.md
-
       - name: Edit changelog
         run: .github/scripts/edit-changelog.sh "$VERSION"
         env:
