@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,9 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.crozzers.postboxgo.R
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.setSetting
@@ -253,6 +258,56 @@ fun VersionInfo() {
         )
     }) {
         Text("View source code")
+        Icon(
+            painter = painterResource(id = R.drawable.open_in_new_window),
+            contentDescription = "View source code in new window",
+            modifier = Modifier.padding(start = 2.dp)
+        )
+    }
+    Button(onClick = {
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "https://github.com/Crozzers/PostboxGO/blob/main/privacy-notice.md".toUri()
+            )
+        )
+    }) {
+        Text("View privacy policy")
+        Icon(
+            painter = painterResource(id = R.drawable.open_in_new_window),
+            contentDescription = "View privacy policy in new window",
+            modifier = Modifier.padding(start = 2.dp)
+        )
+    }
+    Button(onClick = {
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "https://github.com/Crozzers/PostboxGO/issues/new".toUri()
+            )
+        )
+    }) {
+        Text("Report issue via Github")
+        Icon(
+            painter = painterResource(id = R.drawable.open_in_new_window),
+            contentDescription = "Report an issue via Github",
+            modifier = Modifier.padding(start = 2.dp)
+        )
+    }
+    Button(onClick = {
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "mailto:captaincrozzers@gmail.com".toUri()
+            )
+        )
+    }) {
+        Icon(
+            Icons.Outlined.Email,
+            contentDescription = "Report issue via email",
+            modifier = Modifier.padding(end = 2.dp)
+        )
+        Text("Report issue via Email")
     }
     Spacer(modifier = Modifier.padding(8.dp))
     Text("App Version: ${packageInfo.versionName}")
