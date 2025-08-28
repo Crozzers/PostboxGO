@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
@@ -47,76 +48,92 @@ fun ListView(
     postboxes: MutableMap<String, Postbox>,
     onItemClick: (postbox: Postbox) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    val sortOption = LocalContext.current.settings.data.map { preferences ->
-        preferences[Setting.HOMEPAGE_SORT_KEY] ?: SortOption.DATE.name
-    }.collectAsState(initial = SortOption.DATE.name)
-
-    val sortDirection = LocalContext.current.settings.data.map { preferences ->
-        preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
-    }.collectAsState(initial = SortDirection.DESCENDING.name)
-
-    val filteredAndSortedPostboxes = postboxes.values.filter {
-        humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
-                // remove spaces for ID because going back and adding a space to your search query would be annoying
-                it.id.replace(" ", "").contains(searchQuery.replace(" ", ""), ignoreCase = true) ||
-                it.type?.contains(searchQuery, ignoreCase = true) == true ||
-                it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
-                humanReadableDate(it.dateRegistered).contains(searchQuery, ignoreCase = true)
-
-    }.sortedWith(
-        compareBy {
-            when (SortOption.valueOf(sortOption.value)) {
-                SortOption.NAME -> humanReadablePostboxName(it.name)
-                SortOption.ID -> it.id
-                SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
-                SortOption.TYPE -> it.type
-                SortOption.MONARCH -> it.monarch.displayName
-            }
-        }
-    ).let {
-        if (sortDirection.value == SortDirection.DESCENDING.name) {
-            it.reversed()
-        } else {
-            it
-        }
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (postboxes.isEmpty()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("Search postboxes") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.primary,
-                    focusedContainerColor = MaterialTheme.colorScheme.primary,
-                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    cursorColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                trailingIcon = {
-                    IconButton(onClick = {
-                        searchQuery = ""
-                    }) { Icon(Icons.Default.Clear, contentDescription = "Clear search") }
-                }
+            Text("No postboxes registered yet.", textAlign = TextAlign.Center)
+            Text(
+                "Click the plus icon in the top right to register a new postbox.",
+                textAlign = TextAlign.Center
             )
         }
-        // TODO: enable grid view in landscape
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            items(filteredAndSortedPostboxes) { postbox ->
-                PostboxCard(postbox, onItemClick)
+    } else {
+        var searchQuery by remember { mutableStateOf("") }
+
+        val sortOption = LocalContext.current.settings.data.map { preferences ->
+            preferences[Setting.HOMEPAGE_SORT_KEY] ?: SortOption.DATE.name
+        }.collectAsState(initial = SortOption.DATE.name)
+
+        val sortDirection = LocalContext.current.settings.data.map { preferences ->
+            preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
+        }.collectAsState(initial = SortDirection.DESCENDING.name)
+
+        val filteredAndSortedPostboxes = postboxes.values.filter {
+            humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
+                    // remove spaces for ID because going back and adding a space to your search query would be annoying
+                    it.id.replace(" ", "")
+                        .contains(searchQuery.replace(" ", ""), ignoreCase = true) ||
+                    it.type?.contains(searchQuery, ignoreCase = true) == true ||
+                    it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
+                    humanReadableDate(it.dateRegistered).contains(
+                        searchQuery,
+                        ignoreCase = true
+                    )
+        }.sortedWith(
+            compareBy {
+                when (SortOption.valueOf(sortOption.value)) {
+                    SortOption.NAME -> humanReadablePostboxName(it.name)
+                    SortOption.ID -> it.id
+                    SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
+                    SortOption.TYPE -> it.type
+                    SortOption.MONARCH -> it.monarch.displayName
+                }
+            }
+        ).let {
+            if (sortDirection.value == SortDirection.DESCENDING.name) {
+                it.reversed()
+            } else {
+                it
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search postboxes") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                    modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = MaterialTheme.colorScheme.primary,
+                        focusedContainerColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        cursorColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            searchQuery = ""
+                        }) { Icon(Icons.Default.Clear, contentDescription = "Clear search") }
+                    }
+                )
+            }
+            // TODO: enable grid view in landscape
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                items(filteredAndSortedPostboxes) { postbox ->
+                    PostboxCard(postbox, onItemClick)
+                }
             }
         }
     }

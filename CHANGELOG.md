@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Add usage hint to homepage when savefile empty
 - Fix text overflowing on homepage
 - Fix homepage not rendering correctly after deleting postboxes
 
