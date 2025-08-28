@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+
+## [1.0.0-alpha.2] - 2025-08-28
+
 - Add usage hint to homepage when savefile empty
 - Fix text overflowing on homepage
 - Fix homepage not rendering correctly after deleting postboxes
@@ -9,5 +12,6 @@
 - Initial release
 
 
-[unreleased]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.1...HEAD
+[unreleased]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.2...HEAD
+[1.0.0-alpha.2]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.1...1.0.0-alpha.2
 [1.0.0-alpha.1]: https://github.com/Crozzers/PostboxGO/compare/a83a8e123781cee4ffc2a46b705fdd3bf5f7a291...1.0.0-alpha.1
