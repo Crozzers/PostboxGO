@@ -21,7 +21,7 @@ enum class Monarch(val displayName: String) {
 data class Postbox(
     val id: String,
     val coords: Pair<Float, Float>,
-    val monarch: Monarch,
+    var monarch: Monarch,  // var because we can edit this later
     val dateRegistered: String,
     val name: String,
     val type: String?

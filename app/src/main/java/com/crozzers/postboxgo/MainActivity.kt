@@ -29,6 +29,7 @@ import com.crozzers.postboxgo.ui.components.TopBar
 import com.crozzers.postboxgo.ui.theme.PostboxGOTheme
 import com.crozzers.postboxgo.ui.views.AddPostbox
 import com.crozzers.postboxgo.ui.views.DetailsView
+import com.crozzers.postboxgo.ui.views.EditPostbox
 import com.crozzers.postboxgo.ui.views.ListView
 import com.crozzers.postboxgo.ui.views.SettingsView
 import com.crozzers.postboxgo.utils.removeStaleCachedPostboxData
@@ -157,6 +158,23 @@ class MainActivity : ComponentActivity() {
                                 (applicationContext as App).saveFile
                             ) { navController.navigate(NavigationItem.ListView.route) }
                         }
+                        composable("${NavigationItem.EditPostbox.route}/{id}") {
+                            val saveFile = (applicationContext as App).saveFile
+                            val postbox = saveFile.getPostbox(
+                                it.arguments?.getString("id") ?: ""
+                            )
+                            if (postbox == null) {
+                                navController.navigate(NavigationItem.ListView.route)
+                                return@composable
+                            }
+                            EditPostbox(
+                                locationClient,
+                                postbox,
+                            ) {
+                                saveFile.save()
+                                navController.navigate(NavigationItem.ListView.route)
+                            }
+                        }
                         composable(NavigationItem.Settings.route) {
                             SettingsView((applicationContext as App).saveFile)
                         }
@@ -169,7 +187,7 @@ class MainActivity : ComponentActivity() {
 
 
 enum class Screen {
-    ListView, MAPVIEW, ADDPOSTBOX, VIEWPOSTBOX, SETTINGS
+    ListView, MAPVIEW, ADDPOSTBOX, VIEWPOSTBOX, SETTINGS, EDITPOSTBOX
 }
 
 sealed class NavigationItem(val route: String) {
@@ -177,5 +195,6 @@ sealed class NavigationItem(val route: String) {
     object MapView : NavigationItem(Screen.MAPVIEW.name)
     object AddPostbox : NavigationItem(Screen.ADDPOSTBOX.name)
     object ViewPostbox : NavigationItem(Screen.VIEWPOSTBOX.name)
+    object EditPostbox : NavigationItem(Screen.EDITPOSTBOX.name)
     object Settings : NavigationItem(Screen.SETTINGS.name)
 }
