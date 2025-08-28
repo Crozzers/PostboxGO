@@ -41,6 +41,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Dependencies
+        run: |
+          npm i --global conventional-changelog-cli
+
       - name: Set version number
         working-directory: app/
         run: |
@@ -48,6 +52,16 @@ jobs:
           sed -ri 's|(versionName\s*=\s*")(.*)(")|\1'$VERSION'\3|g' build.gradle.kts
         env:
           VERSION: ${{ inputs.version }}
+
+      - name: Parse commits
+        run: |
+          changes=$(npx conventional-changelog-cli -p angular -r 1 | tail -n +3)
+          echo "## [Unreleased]" >> CHANGELOG-new.md
+          echo "$changes" | tee -a CHANGELOG-new.md
+          echo "" | tee -a CHANGELOG-new.md  # add some whitespace
+          echo "" | tee -a CHANGELOG-new.md
+          cat CHANGELOG.md | tee -a CHANGELOG-new.md
+          mv CHANGELOG-new.md CHANGELOG.md
 
       - name: Edit changelog
         run: .github/scripts/edit-changelog.sh "$VERSION"

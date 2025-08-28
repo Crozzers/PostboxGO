@@ -1,6 +1,3 @@
-## [Unreleased]
-
-
 ## [1.0.0-alpha.2] - 2025-08-28
 
 - Add usage hint to homepage when savefile empty

@@ -22,6 +22,13 @@ running you can upload a sample savefile to it with
 
 Then install the app to the device, open settings and import that savefile from the downloads folder.
 
+## Commits and PRs
+
+This repo uses the [angular style](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular)
+of conventional commits to enable automatic generation of the changelog and release notes.
+
+Also see Angular's [commit message format guidelines](https://github.com/angular/angular/blob/main/contributing-docs/commit-message-guidelines.md).
+
 ## Updating app screenshots
 
 Start up an android emulator where you don't mind if the save file is overwritten.
