@@ -1,6 +1,14 @@
 ## [1.0.0-alpha.4] - 2025-08-30
 
+### Features
 
+* add buttons to settings page to report issues and see privacy policy ([1467592](https://github.com/Crozzers/PostboxGo/commit/1467592ce72c55e0bcbd419fd818c7e622c29d75))
+* add icons for common postbox types ([4d4bc8a](https://github.com/Crozzers/PostboxGo/commit/4d4bc8a9d1645f6164f628ff60a6a0126f8568e7))
+
+
+### Performance Improvements
+
+* use last known location if requesting again within 10 minutes ([c0de071](https://github.com/Crozzers/PostboxGo/commit/c0de071a841f27a885da37a6a05526a6f3ec5e0e))
 
 ## [1.0.0-alpha.3] - 2025-08-28
 
