@@ -74,27 +74,35 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
 
-  extract_release_notes:
-    runs-on: ubuntu-latest
-    needs: [bump_version]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.bumpVersion == true && inputs.version || env.GITHUB_REF_NAME }}
-
       - name: Extract release notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v2
         with:
           changelog_file: CHANGELOG.md
-          release_notes_file: whatsnew-en-GB
+          release_notes_file: release-notes.md
+
+      - name: Create whatsnew file
+        run: |
+          # remove headings
+          sed -r 's/^#+ ([[:alnum:]]+)/\1:/g' release-notes.md > whatsnew-en-GB
+          # covert * lists to - lists as they're more visually pleasing
+          sed -i -r 's/^\* ([[:alnum:]]+)/- \1/g' whatsnew-en-GB
+          # strip commit links because they don't render right
+          sed -i -r 's/(.*)\(\[[[:alnum:]]+\]\(https.*\)\)/\1/g' whatsnew-en-GB
+          # capitalise first letter of each bullet
+          sed -i -r 's/(- )([[:alpha:]])(.*)/\1\u\2\3/g' whatsnew-en-GB
+          
+          echo "Whats new:"
+          echo "----------"
+          cat whatsnew-en-GB
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
-          path: whatsnew-en-GB
+          path: |
+            whatsnew-en-GB
+            release-notes.md
 
   build:
     needs: [bump_version]
@@ -105,7 +113,7 @@ jobs:
 
   release_aab:
     if: ${{ inputs.playstore }}
-    needs: [extract_release_notes, build]
+    needs: [bump_version, build]
     runs-on: ubuntu-latest
     environment: release-env
     steps:
@@ -119,6 +127,10 @@ jobs:
         with:
           name: release-notes
           path: whatsnew
+
+      - name: Remove MD files
+        run: |
+          rm whatsnew/*.md
 
       - name: Publish to Play Store
         uses: r0adkll/upload-google-play@v1
@@ -134,7 +146,7 @@ jobs:
     if: ${{ inputs.ghRelease }}
     runs-on: ubuntu-latest
     environment: release-env
-    needs: [bump_version, extract_release_notes, release_aab]
+    needs: [bump_version, release_aab]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -156,7 +168,7 @@ jobs:
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: whatsnew/whatsnew-en-GB
+          body_path: whatsnew/release-notes.md
           draft: false
           files: dist/*
           name: v${{ inputs.version }}
