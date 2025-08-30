@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.settings
+import com.crozzers.postboxgo.utils.PostboxIcon
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.coroutines.flow.map
@@ -162,33 +163,33 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             .clickable { onClick(postbox) }
             .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
-        Column(Modifier.padding(8.dp)) {
-            var id = ""
-            // don't show UUIDs in the homepage. They are long and ugly.
-            // This is also a hangover from v1 savefiles, which didn't use the proper IDs
-            if (!"[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
-                id = " (${postbox.id})"
+        Row {
+            PostboxIcon(Modifier.fillMaxWidth(0.2f), type = postbox.type)
+            Column(Modifier.padding(start=0.dp, end=8.dp, top=8.dp, bottom=8.dp)) {
+                var id = ""
+                // don't show UUIDs in the homepage. They are long and ugly.
+                // This is also a hangover from v1 savefiles, which didn't use the proper IDs
+                if (!"[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
+                    id = " (${postbox.id})"
+                }
+                Text(
+                    text = "Name: ${humanReadablePostboxName(postbox.name)}$id",
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    maxLines = 2, overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Monarch: ${postbox.monarch.displayName}",
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Registered: ${humanReadableDate(postbox.dateRegistered)}",
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
             }
-            Text(
-                text = "Name: ${humanReadablePostboxName(postbox.name)}$id",
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "Type: ${postbox.type}", color = MaterialTheme.colorScheme.surfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "Monarch: ${postbox.monarch.displayName}",
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "Registered: ${humanReadableDate(postbox.dateRegistered)}",
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
+
 

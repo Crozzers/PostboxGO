@@ -32,6 +32,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -39,6 +40,7 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.ConfirmDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.PostboxIcon
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 
@@ -107,17 +109,47 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 
 @Composable
 fun PostboxDetails(postbox: Postbox) {
-    Text(text = humanReadablePostboxName(postbox.name), fontSize = 24.sp)
-    Text(text = "Registered: ${humanReadableDate(postbox.dateRegistered)}", fontSize = 12.sp)
-    Text(text = "ID: ${postbox.id}")
-    Text(text = "Type: ${postbox.type ?: "Unknown"}")
-    Text(text = "Monarch: ${postbox.monarch.displayName}")
-    Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
+    var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
+
+    val configuration = LocalConfiguration.current
+    LaunchedEffect(configuration) {
+        snapshotFlow { configuration.orientation }
+            .collect { orientation = it }
+    }
+
+    Text(
+        text = humanReadablePostboxName(postbox.name),
+        fontSize = 24.sp,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Row {
+        Column {
+            Text(
+                text = "Registered: ${humanReadableDate(postbox.dateRegistered)}",
+                fontSize = 12.sp
+            )
+            Text(text = "ID: ${postbox.id}")
+            Text(text = "Type: ${postbox.type ?: "Unknown"}")
+            Text(text = "Monarch: ${postbox.monarch.displayName}")
+            Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
+        }
+        Spacer(Modifier.weight(1f))
+        PostboxIcon(
+            Modifier.fillMaxWidth(if (orientation == Configuration.ORIENTATION_PORTRAIT) 0.6f else 0.4f),
+            type = postbox.type
+        )
+    }
 }
 
 
 @Composable
-fun ActionButtons(coords: Pair<Float, Float>, modifier: Modifier = Modifier, deleteCallback: (s: Boolean) -> Unit) {
+fun ActionButtons(
+    coords: Pair<Float, Float>,
+    modifier: Modifier = Modifier,
+    deleteCallback: (s: Boolean) -> Unit
+) {
     val context = LocalContext.current
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
 
