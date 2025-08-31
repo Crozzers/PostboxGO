@@ -2,6 +2,14 @@
 
 version="$1"
 
+# check if changelog has already been updated
+if grep -qE "^## \[$version\] - [0-9]{4}(-[0-9]{2}){2}" CHANGELOG.md; then
+  echo "Changelog has already been edited - $version already present"
+  echo "--------------"
+  cat CHANGELOG.md
+  exit 0
+fi
+
 prevVersion=$(
     cat CHANGELOG.md | \
     # get lines with version nums on them

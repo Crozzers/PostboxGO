@@ -86,7 +86,7 @@ jobs:
       - name: Create whatsnew file
         run: |
           # remove headings
-          sed -r 's/^#+ ([[:alnum:]]+)/\1:/g' release-notes.md > whatsnew-en-GB
+          sed -r 's/^#+ ([[:alnum:][:blank:]]+)/\1:/g' release-notes.md > whatsnew-en-GB
           # covert * lists to - lists as they're more visually pleasing
           sed -i -r 's/^\* ([[:alnum:]]+)/- \1/g' whatsnew-en-GB
           # strip commit links because they don't render right
