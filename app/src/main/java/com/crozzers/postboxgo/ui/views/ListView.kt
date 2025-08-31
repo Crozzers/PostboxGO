@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -174,12 +175,14 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
                     id = " (${postbox.id})"
                 }
                 Text(
-                    text = "Name: ${humanReadablePostboxName(postbox.name)}$id",
+                    text = "${humanReadablePostboxName(postbox.name)}$id",
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     maxLines = 2, overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "Monarch: ${postbox.monarch.displayName}",
+                    text = postbox.monarch.displayName,
+                    fontStyle = FontStyle.Italic,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
