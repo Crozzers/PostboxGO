@@ -6,6 +6,7 @@ import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import com.crozzers.postboxgo.DetailedPostboxInfo
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +33,7 @@ private val cacheFileMutex = Mutex()
 
 fun getNearbyPostboxes(
     context: Context,
-    location: Location,
+    location: LatLng,
     callback: (p: List<DetailedPostboxInfo>) -> Unit
 ) {
     val geocoder = Geocoder(context, Locale.getDefault())
@@ -93,6 +94,14 @@ fun getNearbyPostboxes(
     }
 }
 
+fun getNearbyPostboxes(
+    context: Context,
+    location: Location,
+    callback: (p: List<DetailedPostboxInfo>) -> Unit
+) {
+    return getNearbyPostboxes(context, LatLng(location.latitude, location.longitude), callback)
+}
+
 @Serializable
 data class CachedPostboxDetails(
     /** Epoch time in seconds */
@@ -140,7 +149,11 @@ suspend fun getPostboxesFromCache(context: Context, postcode: String): List<Deta
  * Cache the postbox data for the given postcode.
  * This function also removes any stale entries at the same time
  */
-suspend fun cachePostboxData(context: Context, postcode: String, postboxData: List<DetailedPostboxInfo>) {
+suspend fun cachePostboxData(
+    context: Context,
+    postcode: String,
+    postboxData: List<DetailedPostboxInfo>
+) {
     cacheFileMutex.withLock {
         val file = File(context.filesDir, CACHE_FILE)
         val existingData = mutableMapOf<String, CachedPostboxDetails>()
@@ -151,7 +164,8 @@ suspend fun cachePostboxData(context: Context, postcode: String, postboxData: Li
                 Log.w(LOG_TAG, "Failed to parse existing cache data", e)
             }
         }
-        existingData[postcode] = CachedPostboxDetails((System.currentTimeMillis() / 1000), postboxData)
+        existingData[postcode] =
+            CachedPostboxDetails((System.currentTimeMillis() / 1000), postboxData)
 
         file.writeText(JsonParser.encodeToString(existingData))
     }

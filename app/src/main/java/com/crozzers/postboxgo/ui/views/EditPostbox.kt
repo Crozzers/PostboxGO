@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.ui.components.PostboxMap
@@ -63,7 +64,10 @@ fun EditPostbox(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Edit Postbox", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            humanReadablePostboxName(postbox.name), style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Left, modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         when (orientation) {
@@ -114,7 +118,6 @@ fun EditPostbox(
 @Composable
 fun PostboxDetailsBrief(postbox: Postbox) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-        Text("Name: ${humanReadablePostboxName(postbox.name)}")
         Text("Registered: ${humanReadableDate(postbox.dateRegistered)}")
         Text("ID: ${postbox.id}")
     }

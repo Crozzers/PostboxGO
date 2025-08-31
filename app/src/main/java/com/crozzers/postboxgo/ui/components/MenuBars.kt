@@ -19,26 +19,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.crozzers.postboxgo.NavigationItem
+import com.crozzers.postboxgo.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val showEdit =
-        navBackStackEntry?.destination?.route?.startsWith(NavigationItem.ViewPostbox.route) == true
+        navBackStackEntry?.destination?.route?.startsWith(Routes.ViewPostbox.route) == true
+
+    val title = when (navBackStackEntry?.destination?.route?.split("/")[0]) {
+        Routes.AddPostbox.route -> Routes.AddPostbox.displayName
+        Routes.EditPostbox.route -> Routes.EditPostbox.displayName
+        Routes.Settings.route -> Routes.Settings.displayName
+        else -> "PostboxGO"
+    }
 
     TopAppBar(
         title = {
             Text(
-                text = "PostboxGO", maxLines = 1, overflow = TextOverflow.Ellipsis
+                text = title, maxLines = 1, overflow = TextOverflow.Ellipsis
             )
         }, actions = {
             if (showEdit) {
                 val postboxId = navBackStackEntry!!.arguments?.getString("id")
                 if (postboxId != null) {
                     IconButton(onClick = {
-                        navController.navigate("${NavigationItem.EditPostbox.route}/$postboxId")
+                        navController.navigate("${Routes.EditPostbox.route}/$postboxId")
                     }) {
                         Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
                     }
@@ -46,17 +53,17 @@ fun TopBar(navController: NavController) {
             }
             // settings first because it's harder to reach and lesser used
             IconButton(onClick = {
-                navController.navigate(NavigationItem.Settings.route)
+                navController.navigate(Routes.Settings.route)
             }) {
                 Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
             }
             // homepage next as it's less used than adding
-            IconButton(onClick = { navController.navigate(NavigationItem.ListView.route) }) {
+            IconButton(onClick = { navController.navigate(Routes.ListView.route) }) {
                 Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
             }
             // most used, whack it in thumb's reach in the top right
             IconButton(onClick = {
-                navController.navigate(NavigationItem.AddPostbox.route)
+                navController.navigate(Routes.AddPostbox.route)
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add, contentDescription = "Register Postbox"
@@ -75,7 +82,7 @@ fun BottomBar(navController: NavController, visible: Boolean, isListView: Boolea
 
     NavigationBar {
         NavigationBarItem(selected = isListView, onClick = {
-            navController.navigate(NavigationItem.ListView.route)
+            navController.navigate(Routes.ListView.route)
         }, icon = {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.List,
@@ -83,7 +90,7 @@ fun BottomBar(navController: NavController, visible: Boolean, isListView: Boolea
             )
         }, label = { Text("List View") })
         NavigationBarItem(selected = !isListView, onClick = {
-            navController.navigate(NavigationItem.MapView.route)
+            navController.navigate(Routes.MapView.route)
         }, icon = {
             Icon(
                 imageVector = Icons.Filled.LocationOn,

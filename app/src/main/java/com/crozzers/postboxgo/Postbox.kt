@@ -24,12 +24,18 @@ data class Postbox(
     var monarch: Monarch,  // var because we can edit this later
     val dateRegistered: String,
     val name: String,
-    val type: String?
+    val type: String?,
+    /**
+     * Whether we can verify if the user has actually visited this postbox
+     * in person, or just added it from map view
+     */
+    val verified: Boolean = true
 ) {
     companion object {
         fun fromDetailedPostboxInfo(
             pb: DetailedPostboxInfo,
-            monarch: Monarch = Monarch.NONE
+            monarch: Monarch = Monarch.NONE,
+            verified: Boolean = true
         ): Postbox {
             return Postbox(
                 id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}",
@@ -40,7 +46,8 @@ data class Postbox(
                 monarch = monarch,
                 dateRegistered = LocalDateTime.now().toString(),
                 name = pb.officeDetails.name,
-                type = pb.officeDetails.address3
+                type = pb.officeDetails.address3,
+                verified = verified
             )
         }
     }

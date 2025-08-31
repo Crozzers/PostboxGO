@@ -32,6 +32,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,10 +120,11 @@ fun PostboxDetails(postbox: Postbox) {
 
     Text(
         text = humanReadablePostboxName(postbox.name),
-        fontSize = 24.sp,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        style = MaterialTheme.typography.titleLarge,
+        textAlign = TextAlign.Left
     )
     Row {
         Column {
