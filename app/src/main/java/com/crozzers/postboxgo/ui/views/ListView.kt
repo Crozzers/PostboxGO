@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -126,10 +127,10 @@ fun ListView(
                     }
                 )
             }
-            // TODO: enable grid view in landscape
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(300.dp), modifier = Modifier
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Top
             ) {
                 items(filteredAndSortedPostboxes) { postbox ->
@@ -165,7 +166,7 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
     ) {
         Row {
             PostboxIcon(Modifier.fillMaxWidth(0.2f), type = postbox.type)
-            Column(Modifier.padding(start=0.dp, end=8.dp, top=8.dp, bottom=8.dp)) {
+            Column(Modifier.padding(start = 0.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)) {
                 var id = ""
                 // don't show UUIDs in the homepage. They are long and ugly.
                 // This is also a hangover from v1 savefiles, which didn't use the proper IDs
