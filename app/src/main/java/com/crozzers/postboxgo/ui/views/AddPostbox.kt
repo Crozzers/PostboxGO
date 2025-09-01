@@ -309,7 +309,6 @@ fun AddPostboxFromMap(
 
     val cameraPosState by remember { mutableStateOf(CameraPositionState()) }
     val cameraUpdateCallback = {
-
         if (selectedPostbox != null) {
             cameraPosState.move(
                 CameraUpdateFactory.newLatLngZoom(

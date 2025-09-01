@@ -14,10 +14,11 @@ private const val LOG_TAG = "Location"
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 fun getLocation(
     locationClient: FusedLocationProviderClient,
+    refresh: Boolean = false,
     callback: (l: Location?) -> Unit
 ) {
-    val refreshCurrentLocationFirst =
-        lastFetch == null || System.currentTimeMillis() - TEN_MINUTES > (lastFetch ?: 0)
+    val refreshCurrentLocationFirst = refresh ||
+            lastFetch == null || System.currentTimeMillis() - TEN_MINUTES > (lastFetch ?: 0)
     Log.i(LOG_TAG, "Location requested. Refresh current location: $refreshCurrentLocationFirst")
     (
             if (refreshCurrentLocationFirst) locationClient.getCurrentLocation(

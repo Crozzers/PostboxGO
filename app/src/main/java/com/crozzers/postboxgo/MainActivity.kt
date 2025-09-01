@@ -136,6 +136,7 @@ class MainActivity : ComponentActivity() {
                             }
                             EditPostbox(
                                 locationClient,
+                                saveFile,
                                 postbox,
                             ) {
                                 saveFile.save()

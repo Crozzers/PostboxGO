@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -174,12 +175,23 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
                 if (!"[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
                     id = " (${postbox.id})"
                 }
-                Text(
-                    text = "${humanReadablePostboxName(postbox.name)}$id",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    maxLines = 2, overflow = TextOverflow.Ellipsis
-                )
+                Row {
+                    Text(
+                        text = "${humanReadablePostboxName(postbox.name)}$id",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(2f)
+                    )
+                    if (!postbox.verified) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = "Unverified postbox",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(0.2f)
+                        )
+                    }
+                }
                 Text(
                     text = postbox.monarch.displayName,
                     fontStyle = FontStyle.Italic,

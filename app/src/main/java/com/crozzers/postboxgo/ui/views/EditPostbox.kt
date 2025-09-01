@@ -2,6 +2,7 @@ package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
 import android.content.res.Configuration
+import android.location.Location
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,10 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +36,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -42,6 +50,7 @@ import kotlin.uuid.ExperimentalUuidApi
 @Composable
 fun EditPostbox(
     locationClient: FusedLocationProviderClient,
+    saveFile: SaveFile,
     postbox: Postbox,
     callback: (p: Postbox) -> Unit
 ) {
@@ -65,18 +74,23 @@ fun EditPostbox(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        var title = humanReadablePostboxName(postbox.name)
-        if (!postbox.verified) {
-            title += " (unverified)"
-        }
         Text(
-            title, style = MaterialTheme.typography.titleLarge,
+            humanReadablePostboxName(postbox.name), style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Left, modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         when (orientation) {
             Configuration.ORIENTATION_PORTRAIT -> {
+                if (!postbox.verified) {
+                    Row(Modifier.fillMaxWidth()) {
+                        VerifyPostbox(locationClient, postbox) {
+                            postbox.verified = it
+                            saveFile.save()
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
                 PostboxDetailsBrief(postbox)
                 PostboxMap(
                     postbox,
@@ -92,6 +106,13 @@ fun EditPostbox(
             else -> {
                 Row(Modifier.padding(8.dp)) {
                     Column(Modifier.fillMaxWidth(0.5f)) {
+                        if (!postbox.verified) {
+                            VerifyPostbox(locationClient, postbox) {
+                                postbox.verified = it
+                                saveFile.save()
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
                         PostboxDetailsBrief(postbox)
                         SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
                     }
@@ -127,4 +148,71 @@ fun PostboxDetailsBrief(postbox: Postbox) {
         Text("ID: ${postbox.id}")
     }
     Spacer(modifier = Modifier.height(8.dp))
+}
+
+@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+@Composable
+fun VerifyPostbox(
+    locationClient: FusedLocationProviderClient,
+    postbox: Postbox,
+    callback: (Boolean) -> Unit
+) {
+    var text by remember { mutableStateOf("Verify Postbox") }
+    var enabled by remember { mutableStateOf(true) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    Button(
+        onClick = {
+            showDialog = false
+            text = "Getting current location..."
+            getLocation(locationClient, true) {
+                if (it == null) {
+                    text = "Failed to get current location"
+                    return@getLocation
+                }
+                val results = floatArrayOf(0.0F)
+                Location.distanceBetween(
+                    it.latitude, it.longitude,
+                    postbox.coords.first.toDouble(), postbox.coords.second.toDouble(), results
+                )
+                val distance = results[0]
+                if (distance >= 2500) {
+                    text = "Verify Postbox"
+                    showDialog = true
+                } else {
+                    callback(true)
+                    enabled = false
+                    text = "Postbox verified!"
+                }
+            }
+        },
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(disabledContentColor = MaterialTheme.colorScheme.onPrimary)
+    ) {
+        if (enabled) {
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = "Unverified postbox",
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = "Verified postbox",
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+        Spacer(Modifier.width(2.dp))
+        Text(text)
+    }
+
+
+    if (showDialog) {
+        InfoDialog(
+            title = "Verification Failed",
+            body = "You must be less than 2.5km away from the postbox to verify it",
+            icon = Icons.Filled.Warning,
+            dismissButtonText = null
+        )
+    }
 }

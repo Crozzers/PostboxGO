@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,7 +35,8 @@ fun ConfirmDialog(
         title, body, Icons.Filled.Warning, "Dismiss", "Confirm"
     ) {
         // do `== true` because a `!= null` type guard doesn't work
-        state -> callback(state == true)
+            state ->
+        callback(state == true)
     }
 }
 
@@ -54,9 +56,9 @@ fun InfoDialog(
     title: String = "Info",
     body: String = "",
     icon: ImageVector = Icons.Filled.Info,
-    dismissButtonText: String = "Dismiss",
+    dismissButtonText: String? = "Dismiss",
     confirmButtonText: String = "Ok",
-    callback: (state: Boolean?) -> Unit
+    callback: ((state: Boolean?) -> Unit)? = null
 ) {
     var showDialog by remember { mutableStateOf(true) }
     var state: Boolean? by remember { mutableStateOf(null) }
@@ -78,33 +80,35 @@ fun InfoDialog(
                     onClick = {
                         showDialog = false
                         state = true
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Text(confirmButtonText)
                 }
             },
-            dismissButton = {
+            dismissButton = if (dismissButtonText != null) ({
                 TextButton(
                     onClick = {
                         showDialog = false
                         state = false
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Text(dismissButtonText)
                 }
-            },
+            }) else null,
             onDismissRequest = {
                 showDialog = false
             },
-            titleContentColor = MaterialTheme.colorScheme.primary,
-            textContentColor = MaterialTheme.colorScheme.primary,
-            iconContentColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            textContentColor = MaterialTheme.colorScheme.onPrimary,
+            iconContentColor = MaterialTheme.colorScheme.onPrimary,
         )
     }
 
     LaunchedEffect(showDialog) {
         if (!showDialog) {
-            callback(state)
+            callback?.invoke(state)
         }
     }
 }

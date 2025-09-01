@@ -29,7 +29,7 @@ data class Postbox(
      * Whether we can verify if the user has actually visited this postbox
      * in person, or just added it from map view
      */
-    val verified: Boolean = true
+    var verified: Boolean = true
 ) {
     companion object {
         fun fromDetailedPostboxInfo(
