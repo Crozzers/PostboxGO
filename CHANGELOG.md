@@ -1,3 +1,11 @@
+## [1.0.0-alpha.6] - 2025-09-01
+
+### Features
+
+* automatically center map on selected postbox when adding from map ([88aa0ad](https://github.com/Crozzers/PostboxGO/commit/88aa0ad8ba88fdb91f1fb519749a50588fdc11c6))
+* automatically verify postboxes added from map if user is close enough ([c28cda4](https://github.com/Crozzers/PostboxGO/commit/c28cda4ddaec8af1e802142ac6b17e6eb52af514))
+
+
 ## [1.0.0-alpha.5] - 2025-09-01
 
 ### Features
@@ -45,3 +53,4 @@
 [1.0.0-alpha.3]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.2...1.0.0-alpha.3
 [1.0.0-alpha.4]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.3...1.0.0-alpha.4
 [1.0.0-alpha.5]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.4...1.0.0-alpha.5
+[1.0.0-alpha.6]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.5...1.0.0-alpha.6
