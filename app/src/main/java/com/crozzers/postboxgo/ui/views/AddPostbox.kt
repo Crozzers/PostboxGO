@@ -3,6 +3,7 @@ package com.crozzers.postboxgo.ui.views
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +60,7 @@ import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
+import com.crozzers.postboxgo.utils.isPostboxVerified
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -66,6 +68,8 @@ import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import kotlin.uuid.ExperimentalUuidApi
+
+private const val LOG_TAG = "AddPostbox"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,6 +134,7 @@ fun AddPostbox(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val context = LocalContext.current
         when (tabIndex) {
             0 -> AddNearbyPostbox(
                 locationClient,
@@ -150,6 +155,26 @@ fun AddPostbox(
                 selectedPostbox = p
                 selectedMonarch = m
                 verified = false
+                // if location permission enabled, run a quick verification check in the
+                // background
+                if (p != null && ActivityCompat.checkSelfPermission(
+                        context, Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.i(
+                        LOG_TAG,
+                        "Running background verification check on ${p.officeDetails.name}"
+                    )
+                    isPostboxVerified(
+                        locationClient, Postbox.fromDetailedPostboxInfo(p)
+                    ) { state ->
+                        // location grabs can take time so check if selected postbox is
+                        // still the one we're checking
+                        if (state && selectedPostbox == p) {
+                            verified = true
+                        }
+                    }
+                }
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
@@ -342,7 +367,6 @@ fun AddPostboxFromMap(
             Column(Modifier.padding(4.dp)) {
                 Box(Modifier.fillMaxHeight(0.5f)) {
                     GoogleMap(
-//                modifier = modifier,
                         cameraPositionState = cameraPosState,
                         properties = MapProperties(
                             isMyLocationEnabled = locationPermissionGranted
