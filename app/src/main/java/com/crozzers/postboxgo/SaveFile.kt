@@ -18,7 +18,7 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-const val LOG_TAG = "SaveFile"
+private const val LOG_TAG = "SaveFile"
 
 class SaveFile(private val context: Context) {
     private var data: SaveDataV2

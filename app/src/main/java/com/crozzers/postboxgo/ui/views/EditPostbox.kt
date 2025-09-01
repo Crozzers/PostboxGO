@@ -1,8 +1,8 @@
 package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.location.Location
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,15 +33,18 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
-import com.crozzers.postboxgo.utils.getLocation
+import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
+import com.crozzers.postboxgo.utils.isPostboxVerified
 import com.google.android.gms.location.FusedLocationProviderClient
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -160,31 +163,35 @@ fun VerifyPostbox(
     var text by remember { mutableStateOf("Verify Postbox") }
     var enabled by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val locationPermissionCallback = checkAndRequestLocation(
+        "Location permissions are required to verify that you are near to a postbox. Please grant location permissions and try again"
+    ) {
+        // do a quick check here because kotlin doesn't know that the permission is already granted
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            text = "Getting current location..."
+
+            isPostboxVerified(locationClient, postbox) {
+                if (it) {
+                    callback(true)
+                    enabled = false
+                    text = "Postbox verified!"
+                } else {
+                    text = "Verify Postbox"
+                    showDialog = true
+                }
+            }
+        }
+    }
 
     Button(
         onClick = {
             showDialog = false
-            text = "Getting current location..."
-            getLocation(locationClient, true) {
-                if (it == null) {
-                    text = "Failed to get current location"
-                    return@getLocation
-                }
-                val results = floatArrayOf(0.0F)
-                Location.distanceBetween(
-                    it.latitude, it.longitude,
-                    postbox.coords.first.toDouble(), postbox.coords.second.toDouble(), results
-                )
-                val distance = results[0]
-                if (distance >= 2500) {
-                    text = "Verify Postbox"
-                    showDialog = true
-                } else {
-                    callback(true)
-                    enabled = false
-                    text = "Postbox verified!"
-                }
-            }
+            locationPermissionCallback()
         },
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(disabledContentColor = MaterialTheme.colorScheme.onPrimary)
@@ -205,7 +212,6 @@ fun VerifyPostbox(
         Spacer(Modifier.width(2.dp))
         Text(text)
     }
-
 
     if (showDialog) {
         InfoDialog(

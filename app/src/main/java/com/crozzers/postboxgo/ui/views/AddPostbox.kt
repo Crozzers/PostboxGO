@@ -1,7 +1,6 @@
 package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.widget.Toast
@@ -51,13 +50,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.net.toUri
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
-import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
@@ -69,7 +67,6 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import kotlin.uuid.ExperimentalUuidApi
 
-@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostbox(
@@ -77,9 +74,10 @@ fun AddPostbox(
     saveFile: SaveFile,
     callback: (p: Postbox) -> Unit
 ) {
-    val locationPermissionGranted = (ActivityCompat.checkSelfPermission(
-        LocalContext.current, Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
+    val locationPermissionGranted = (
+            ActivityCompat.checkSelfPermission(
+                LocalContext.current, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
             )
     var tabIndex by remember { mutableIntStateOf(if (locationPermissionGranted) 0 else 1) }
     val tabs = listOf("Nearby", "Select on map")
@@ -88,9 +86,7 @@ fun AddPostbox(
     var selectedMonarch by remember { mutableStateOf(Monarch.NONE) }
     var verified by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showWarning by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
     Column {
         TabRow(
             selectedTabIndex = tabIndex, contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -104,37 +100,24 @@ fun AddPostbox(
             }
         ) {
             tabs.forEachIndexed { index, title ->
+                val locationCheckCallback = checkAndRequestLocation(
+                    (
+                            "Location permissions are required to locate nearby postboxes."
+                                    + " Please enable location access to register a postbox in this way."
+                                    + " You can view our privacy policy for details on how this information is used"
+                            )
+                ) {
+                    tabIndex = index
+                }
                 Tab(
                     text = { Text(title) }, selected = tabIndex == index,
                     onClick = {
-                        if (index == 0 && !locationPermissionGranted) {
-                            showWarning = true
-                            return@Tab
+                        if (index == 0) {
+                            locationCheckCallback()
+                        } else {
+                            tabIndex = index
                         }
-                        tabIndex = index
                     },
-                )
-            }
-        }
-    }
-    if (showWarning) {
-        InfoDialog(
-            title = "Location permission required",
-            body = (
-                    "This app requires location permissions to locate nearby postboxes."
-                            + " Please enable location access to register a postbox in this way."
-                            + " You can view our privacy policy for details on how this information is used"
-                    ),
-            dismissButtonText = "Open Privacy Policy",
-            confirmButtonText = "Ok"
-        ) { state ->
-            showWarning = false
-            if (state == false) {
-                context.startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        "https://github.com/Crozzers/PostboxGO/blob/main/privacy-notice.md".toUri()
-                    )
                 )
             }
         }

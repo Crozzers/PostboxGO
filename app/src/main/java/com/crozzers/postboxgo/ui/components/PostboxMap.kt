@@ -88,7 +88,9 @@ fun PostboxMap(
         cameraPositionState = cameraPosState,
         uiSettings = mapSettings,
         properties = MapProperties(
-            isMyLocationEnabled = locationClient != null,
+            isMyLocationEnabled = locationClient != null && ActivityCompat.checkSelfPermission(
+                LocalContext.current, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED,
             // make sure we don't zoom way into the map and make it useless
             maxZoomPreference = 17f,
         )
