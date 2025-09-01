@@ -352,7 +352,19 @@ fun AddPostboxFromMap(
                         })
                     }
                 },
-                selectionCallback = { p -> callback(p, selectedMonarch) }
+                selectionCallback = { p ->
+                    callback(p, selectedMonarch)
+                    // center on selected PB
+                    cameraPosState.move(
+                        CameraUpdateFactory.newLatLngZoom(
+                            // some place in blackpool. Centers the UK nicely on the map
+                            LatLng(
+                                p.locationDetails.latitude.toDouble(),
+                                p.locationDetails.longitude.toDouble()
+                            ), 17f
+                        )
+                    )
+                }
             )
             Spacer(modifier = Modifier.height(6.dp))
             SelectMonarch(
