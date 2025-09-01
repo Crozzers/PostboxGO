@@ -1,3 +1,15 @@
+## [1.0.0-alpha.5] - 2025-09-01
+
+### Features
+
+* add a way to verify postboxes ([dbc5e8c](https://github.com/Crozzers/PostboxGO/commit/dbc5e8c4bedc28e4cf1db27c9eb0bbbf39ad2d2c))
+* add ability to register new postboxes by dropping pin on a map ([75718e0](https://github.com/Crozzers/PostboxGO/commit/75718e070d211a3958913670c2fe7f6a03700cc7))
+* better handling of missing permissions ([7c599c9](https://github.com/Crozzers/PostboxGO/commit/7c599c9e1ce24a5fb623e317a8f5237076b69fff))
+* de-clutter the postbox cards on the homepage ([6a09898](https://github.com/Crozzers/PostboxGO/commit/6a098983e65a2f807c4464b876ad02e2d3df4cae))
+* enable grid view on homepage in landscape ([f3cf4b0](https://github.com/Crozzers/PostboxGO/commit/f3cf4b0e31fdfa54c06164aa8a717a51112a3f80))
+* show postbox icons as map markers, remove from details view ([70d01bf](https://github.com/Crozzers/PostboxGO/commit/70d01bfccf843432aeff0efbd69ed4b9a1d5a503))
+
+
 ## [1.0.0-alpha.4] - 2025-08-30
 
 ### Features
@@ -32,3 +44,4 @@
 [1.0.0-alpha.2]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.1...1.0.0-alpha.2
 [1.0.0-alpha.3]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.2...1.0.0-alpha.3
 [1.0.0-alpha.4]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.3...1.0.0-alpha.4
+[1.0.0-alpha.5]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.4...1.0.0-alpha.5
