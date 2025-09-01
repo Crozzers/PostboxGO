@@ -34,10 +34,12 @@ Also see Angular's [commit message format guidelines](https://github.com/angular
 Start up an android emulator where you don't mind if the save file is overwritten.
 Run the following commands to remove the previous screenshots from the emulator:
 ```shell
-adb push docs/sample_savefile.json /storage/emulated/0/Download/base.json &&
+# options for device are phone or tablet
+device=phone &&
+    adb push docs/sample_savefile.json /storage/emulated/0/Download/base.json &&
     adb shell "rm -rf /storage/emulated/0/Pictures/pbg" &&
     adb shell "mkdir /storage/emulated/0/Pictures/pbg" &&
-    ./gradlew -Pandroid.testInstrumentationRunnerArguments.screenshots=1 connectedAndroidTest &&
+    ./gradlew -Pandroid.testInstrumentationRunnerArguments.screenshots=1 -Pandroid.testInstrumentationRunnerArguments.device=$device connectedAndroidTest &&
     for file in $(adb shell "ls /storage/emulated/0/Pictures/pbg/*.png"); do adb pull $file docs/images/; done
 ```
 
