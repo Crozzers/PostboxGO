@@ -11,10 +11,18 @@ import com.crozzers.postboxgo.R
 
 @Composable
 fun PostboxIcon(modifier: Modifier = Modifier, type: String?) {
-    var icon: Int
+    Icon(
+        painter = painterResource(id = getIconFromPostboxType(type)),
+        contentDescription = type,
+        modifier = modifier.padding(10.dp),
+        tint = Color.Companion.Unspecified
+    )
+}
+
+fun getIconFromPostboxType(type: String?): Int {
     val type = (type ?: "").lowercase()
 
-    icon = if (type.contains("k type pillar")) {
+    return if (type.contains("k type pillar")) {
         R.drawable.k_type_pillar
     } else if (type.contains("wall box c type")) {
         R.drawable.wall_box_c_type
@@ -31,11 +39,4 @@ fun PostboxIcon(modifier: Modifier = Modifier, type: String?) {
     } else {
         R.drawable.pillar_generic
     }
-
-    Icon(
-        painter = painterResource(id = icon),
-        contentDescription = type,
-        modifier = modifier.padding(10.dp),
-        tint = Color.Companion.Unspecified
-    )
 }

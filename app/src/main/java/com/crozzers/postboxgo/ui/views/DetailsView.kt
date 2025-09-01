@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +64,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
                     .padding(16.dp)
             ) {
                 PostboxDetails(postbox)
-                PostboxMap(postbox, Modifier.fillMaxHeight(0.75f))
+                PostboxMap(postbox, Modifier.fillMaxHeight(0.7f))
                 ActionButtons(
                     postbox.coords,
                     Modifier.height(16.dp)
@@ -110,14 +111,6 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 
 @Composable
 fun PostboxDetails(postbox: Postbox) {
-    var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
-
-    val configuration = LocalConfiguration.current
-    LaunchedEffect(configuration) {
-        snapshotFlow { configuration.orientation }
-            .collect { orientation = it }
-    }
-
     Text(
         text = humanReadablePostboxName(postbox.name),
         overflow = TextOverflow.Ellipsis,
@@ -137,11 +130,6 @@ fun PostboxDetails(postbox: Postbox) {
             Text(text = "Monarch: ${postbox.monarch.displayName}")
             Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
         }
-        Spacer(Modifier.weight(1f))
-        PostboxIcon(
-            Modifier.fillMaxWidth(if (orientation == Configuration.ORIENTATION_PORTRAIT) 0.6f else 0.4f),
-            type = postbox.type
-        )
     }
 }
 

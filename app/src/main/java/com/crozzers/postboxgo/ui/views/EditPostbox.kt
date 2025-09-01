@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +58,6 @@ fun EditPostbox(
                 screenHeight = configuration.screenHeightDp
             }
     }
-
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -64,8 +65,12 @@ fun EditPostbox(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        var title = humanReadablePostboxName(postbox.name)
+        if (!postbox.verified) {
+            title += " (unverified)"
+        }
         Text(
-            humanReadablePostboxName(postbox.name), style = MaterialTheme.typography.titleLarge,
+            title, style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Left, modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))

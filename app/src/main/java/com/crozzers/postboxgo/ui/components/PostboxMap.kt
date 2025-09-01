@@ -3,11 +3,16 @@ package com.crozzers.postboxgo.ui.components
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Postbox
+import com.crozzers.postboxgo.utils.bitmapDescriptorFromDrawable
+import com.crozzers.postboxgo.utils.getIconFromPostboxType
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -39,7 +44,7 @@ fun PostboxMap(
     val boundsBuilder = LatLngBounds.builder()
     // use this rather than rememberCameraPositionState to make sure it
     // moves the map when we reload with new coords
-    val cameraPosState = CameraPositionState()
+    val cameraPosState by remember { mutableStateOf(CameraPositionState()) }
 
     // if we provide a location client and IF permission is enabled, show that
     // on the map and zoom to fit
@@ -98,7 +103,11 @@ fun PostboxMap(
                 state = MarkerState(position = pos),
                 title = postbox.name,
                 onInfoWindowClick = { onPostboxClick?.invoke(postbox) },
-                snippet = if (onPostboxClick != null) "Click for details" else null
+                snippet = if (onPostboxClick != null) "Click for details" else null,
+                icon = bitmapDescriptorFromDrawable(
+                    LocalContext.current,
+                    getIconFromPostboxType(postbox.type)
+                )
             )
         }
         if (postboxes.isEmpty()) {
