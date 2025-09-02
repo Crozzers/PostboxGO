@@ -44,7 +44,18 @@ fun getNearbyPostboxes(
         Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
         return
     }
+    val country = addresses[0].countryCode
     val postcode = addresses[0].postalCode
+    if (country != "GB" && country != "GBR") {
+        // Royal mail's API is only valid in UK and NI. I checked ALL British overseas territories
+        // as listed here: https://en.wikipedia.org/wiki/British_Overseas_Territories#Current_overseas_territories.
+        // fun fact: most of them don't use postcodes at all (at least not UK style ones)
+        // I did also check the Republic of Ireland since they do still have some UK postboxes
+        // (but painted green), but Royal Mail does not work there.
+        Log.e(LOG_TAG, "Postcode is not in the UK: $postcode - $country")
+        Toast.makeText(context, "Error: location is not in the UK", Toast.LENGTH_SHORT).show()
+        return
+    }
 
     CoroutineScope(Dispatchers.IO).launch {
         var postboxData: List<DetailedPostboxInfo>? = getPostboxesFromCache(context, postcode)
