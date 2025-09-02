@@ -106,6 +106,16 @@ jobs:
             whatsnew-en-GB
             release-notes.md
 
+      - name: Summary
+        run: |
+          echo "### Version info" >> $GITHUB_STEP_SUMMARY
+          echo "Version: $version" >> $GITHUB_STEP_SUMMARY
+          echo "Version Code: $GITHUB_RUN_NUMBER" >> $GITHUB_STEP_SUMMARY
+          echo "### Release notes" >> $GITHUB_STEP_SUMMARY
+          cat release-notes.md >> $GITHUB_STEP_SUMMARY
+          echo "### Whatsnew" >> $GITHUB_STEP_SUMMARY
+          cat whatsnew-en-GB >> $GITHUB_STEP_SUMMARY
+
   build:
     needs: [bump_version]
     uses: ./.github/workflows/build.yml
