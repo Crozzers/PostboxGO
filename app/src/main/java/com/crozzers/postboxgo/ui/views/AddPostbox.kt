@@ -1,6 +1,7 @@
 package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.util.Log
@@ -52,15 +53,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.DetailedPostboxInfo
+import com.crozzers.postboxgo.LocationDetails
 import com.crozzers.postboxgo.Monarch
+import com.crozzers.postboxgo.PostOfficeDetails
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.utils.PostboxIcon
 import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.crozzers.postboxgo.utils.isPostboxVerified
+import com.crozzers.postboxgo.utils.posToUKPostcode
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -84,7 +89,7 @@ fun AddPostbox(
             ) == PackageManager.PERMISSION_GRANTED
             )
     var tabIndex by remember { mutableIntStateOf(if (locationPermissionGranted) 0 else 1) }
-    val tabs = listOf("Nearby", "Select on map")
+    val tabs = listOf("Nearby", "Select on map", "Inactive postbox")
 
     var selectedPostbox by remember { mutableStateOf<DetailedPostboxInfo?>(null) }
     var selectedMonarch by remember { mutableStateOf(Monarch.NONE) }
@@ -127,6 +132,29 @@ fun AddPostbox(
         }
     }
 
+    fun verifyPostbox(context: Context, p: DetailedPostboxInfo?) {
+        // if location permission enabled, run a quick verification check in the
+        // background
+        if (p != null && ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.i(
+                LOG_TAG,
+                "Running background verification check on ${p.officeDetails.name}"
+            )
+            isPostboxVerified(
+                locationClient, Postbox.fromDetailedPostboxInfo(p)
+            ) { state ->
+                // location grabs can take time so check if selected postbox is
+                // still the one we're checking
+                if (state && selectedPostbox == p) {
+                    verified = true
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -155,26 +183,16 @@ fun AddPostbox(
                 selectedPostbox = p
                 selectedMonarch = m
                 verified = false
-                // if location permission enabled, run a quick verification check in the
-                // background
-                if (p != null && ActivityCompat.checkSelfPermission(
-                        context, Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    Log.i(
-                        LOG_TAG,
-                        "Running background verification check on ${p.officeDetails.name}"
-                    )
-                    isPostboxVerified(
-                        locationClient, Postbox.fromDetailedPostboxInfo(p)
-                    ) { state ->
-                        // location grabs can take time so check if selected postbox is
-                        // still the one we're checking
-                        if (state && selectedPostbox == p) {
-                            verified = true
-                        }
-                    }
-                }
+                verifyPostbox(context, p)
+            }
+
+            2 -> AddInactivePostbox(
+                locationClient, selectedPostbox, selectedMonarch
+            ) { p, m ->
+                selectedPostbox = p
+                selectedMonarch = m
+                verified = false
+                verifyPostbox(context, p)
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
@@ -436,6 +454,152 @@ fun AddPostboxFromMap(
     }
 }
 
+@Composable
+fun AddInactivePostbox(
+    locationClient: FusedLocationProviderClient,
+    selectedPostbox: DetailedPostboxInfo?,
+    selectedMonarch: Monarch,
+    callback: (p: DetailedPostboxInfo?, m: Monarch) -> Unit
+) {
+    var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
+    val configuration = LocalConfiguration.current
+    var screenHeight by remember { mutableIntStateOf(configuration.screenHeightDp) }
+
+    val locationPermissionGranted = (ActivityCompat.checkSelfPermission(
+        LocalContext.current, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED)
+
+    LaunchedEffect(configuration) {
+        snapshotFlow { configuration.orientation }
+            .collect {
+                orientation = it
+                screenHeight = configuration.screenHeightDp
+            }
+    }
+
+    val context = LocalContext.current
+
+    val cameraPosState by remember { mutableStateOf(CameraPositionState()) }
+    if (selectedPostbox != null) {
+        cameraPosState.move(
+            CameraUpdateFactory.newLatLng(
+                LatLng(
+                    selectedPostbox.locationDetails.latitude.toDouble(),
+                    selectedPostbox.locationDetails.longitude.toDouble()
+                )
+            )
+        )
+    } else if (locationPermissionGranted) {
+        getLocation(locationClient) { location ->
+            if (location != null) {
+                cameraPosState.move(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(location.latitude, location.longitude), 15f
+                    )
+                )
+            }
+        }
+    }
+
+    val selectionComponent = @Composable { modifier: Modifier ->
+        Column(modifier) {
+            SelectPostboxType(selectedPostbox?.officeDetails?.address3) {
+                var postcode = try {
+                    posToUKPostcode(context, cameraPosState.position.target)
+                } catch (_: IllegalArgumentException) {
+                    null
+                }
+                postcode = postcode ?: "N/A"
+
+                callback(
+                    DetailedPostboxInfo(
+                        type = "inactive",
+                        officeDetails = PostOfficeDetails(
+                            name = "Inactive Postbox ($postcode)",
+                            address1 = "",
+                            address3 = it,
+                            postcode = postcode,
+                            specialCharacteristics = "",
+                            specialPostboxDescription = "",
+                            isPriorityPostbox = false,
+                            isSpecialPostbox = false
+                        ),
+                        locationDetails = LocationDetails(
+                            latitude = cameraPosState.position.target.latitude.toFloat(),
+                            longitude = cameraPosState.position.target.longitude.toFloat(),
+                            distance = 0.0f
+                        )
+                    ),
+                    selectedMonarch
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            SelectMonarch(
+                selectedMonarch,
+                selectionCallback = { m -> callback(selectedPostbox, m) }
+            )
+        }
+    }
+
+    when (orientation) {
+        Configuration.ORIENTATION_PORTRAIT -> {
+            Column(Modifier.padding(4.dp)) {
+                Box(Modifier.fillMaxHeight(0.5f)) {
+                    GoogleMap(
+                        cameraPositionState = cameraPosState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = locationPermissionGranted
+                        )
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Pin",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp)
+                            .offset(y = ((-25).dp))
+                    )
+                }
+                selectionComponent(Modifier)
+            }
+        }
+
+        else -> {
+            Row(
+                Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth()
+                    .height((screenHeight * 0.35).dp)
+            ) {
+                selectionComponent(Modifier.fillMaxWidth(0.5f))
+                Spacer(Modifier.size(4.dp))
+                Box(Modifier.fillMaxSize()) {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPosState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = locationPermissionGranted
+                        )
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Pin",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp)
+                            .offset(y = ((-25).dp))
+                    )
+                }
+            }
+        }
+    }
+}
+
+
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
@@ -578,3 +742,54 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectPostboxType(
+    selectedType: String?,
+    onClick: (String) -> Unit
+) {
+    var typeDropdownExpanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = typeDropdownExpanded,
+        onExpandedChange = {
+            typeDropdownExpanded = !typeDropdownExpanded
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedType ?: "Select a postbox type",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = "Postbox") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedLabelColor = MaterialTheme.colorScheme.outline,
+            ),
+            singleLine = true
+        )
+        ExposedDropdownMenu(
+            expanded = typeDropdownExpanded,
+            onDismissRequest = { typeDropdownExpanded = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            listOf(
+                "Pillar", "K Type Pillar", "C Type Pillar", "Lamp Pedastal",
+                "Wall Box", "Wall Box C Type", "Parcel", "Bantam N Type"
+            ).forEach { type ->
+                DropdownMenuItem(
+                    text = {
+                        Text(type)
+                    },
+                    onClick = {
+                        typeDropdownExpanded = false
+                        onClick(type)
+                    },
+                    leadingIcon = { PostboxIcon(modifier = Modifier.size(128.dp), type = type) }
+                )
+            }
+        }
+    }
+}

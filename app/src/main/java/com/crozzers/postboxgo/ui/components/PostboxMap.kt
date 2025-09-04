@@ -109,7 +109,8 @@ fun PostboxMap(
                 icon = bitmapDescriptorFromDrawable(
                     LocalContext.current,
                     getIconFromPostboxType(postbox.type)
-                )
+                ),
+                alpha = if (postbox.inactive) 0.5f else 1.0f
             )
         }
         if (postboxes.isEmpty()) {

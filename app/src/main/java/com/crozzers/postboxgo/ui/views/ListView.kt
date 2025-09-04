@@ -167,7 +167,7 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
             .border(5.dp, MaterialTheme.colorScheme.surface)
     ) {
         Row {
-            PostboxIcon(Modifier.fillMaxWidth(0.2f), type = postbox.type)
+            PostboxIcon(Modifier.fillMaxWidth(0.2f), type = postbox.type, postbox.inactive)
             Column(Modifier.padding(start = 0.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)) {
                 var id = ""
                 // don't show UUIDs in the homepage. They are long and ugly.

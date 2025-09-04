@@ -58,6 +58,7 @@ fun EditPostbox(
     callback: (p: Postbox) -> Unit
 ) {
     var selectedMonarch by remember { mutableStateOf(postbox.monarch) }
+    var selectedType by remember { mutableStateOf<String?>(postbox.type) }
 
     var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -102,6 +103,12 @@ fun EditPostbox(
                         .height((screenHeight * 0.35).dp),
                     locationClient = locationClient
                 )
+                if (postbox.inactive) {
+                    Spacer(Modifier.height(16.dp))
+                    SelectPostboxType(selectedType) {
+                        selectedType = it
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
             }
@@ -117,6 +124,11 @@ fun EditPostbox(
                             Spacer(modifier = Modifier.height(4.dp))
                         }
                         PostboxDetailsBrief(postbox)
+                        if (postbox.inactive) {
+                            SelectPostboxType(selectedType) {
+                                selectedType = it
+                            }
+                        }
                         SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
                     }
                     Spacer(Modifier.padding(8.dp))
@@ -135,6 +147,7 @@ fun EditPostbox(
         Button(
             onClick = {
                 postbox.monarch = selectedMonarch
+                postbox.type = selectedType
                 callback(postbox)
             }
         ) {

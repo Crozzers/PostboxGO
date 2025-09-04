@@ -36,24 +36,15 @@ fun getNearbyPostboxes(
     location: LatLng,
     callback: (p: List<DetailedPostboxInfo>) -> Unit
 ) {
-    val geocoder = Geocoder(context, Locale.getDefault())
-
-    val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-    if (addresses.isNullOrEmpty()) {
-        Log.e(LOG_TAG, "Failed to determine postcode")
+    var postcode: String?
+    try {
+        postcode = posToUKPostcode(context, location)
+    } catch (e: IllegalArgumentException) {
         Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
         return
     }
-    val country = addresses[0].countryCode
-    val postcode = addresses[0].postalCode
-    if (country != "GB" && country != "GBR") {
-        // Royal mail's API is only valid in UK and NI. I checked ALL British overseas territories
-        // as listed here: https://en.wikipedia.org/wiki/British_Overseas_Territories#Current_overseas_territories.
-        // fun fact: most of them don't use postcodes at all (at least not UK style ones)
-        // I did also check the Republic of Ireland since they do still have some UK postboxes
-        // (but painted green), but Royal Mail does not work there.
-        Log.e(LOG_TAG, "Postcode is not in the UK: $postcode - $country")
-        Toast.makeText(context, "Error: location is not in the UK", Toast.LENGTH_SHORT).show()
+    if (postcode == null) {
+        Log.e(LOG_TAG, "Failed to determine postcode")
         return
     }
 
@@ -103,6 +94,27 @@ fun getNearbyPostboxes(
         }
         return@launch
     }
+}
+
+fun posToUKPostcode(context: Context, pos: LatLng): String? {
+    val geocoder = Geocoder(context, Locale.getDefault())
+
+    val addresses = geocoder.getFromLocation(pos.latitude, pos.longitude, 1)
+    if (addresses.isNullOrEmpty()) {
+        return null
+    }
+    val country = addresses[0].countryCode
+    val postcode = addresses[0].postalCode
+    if (country != "GB" && country != "GBR") {
+        // Royal mail's API is only valid in UK and NI. I checked ALL British overseas territories
+        // as listed here: https://en.wikipedia.org/wiki/British_Overseas_Territories#Current_overseas_territories.
+        // fun fact: most of them don't use postcodes at all (at least not UK style ones)
+        // I did also check the Republic of Ireland since they do still have some UK postboxes
+        // (but painted green), but Royal Mail does not work there.
+        Log.e(LOG_TAG, "Postcode is not in the UK: $postcode - $country")
+        throw IllegalArgumentException("Postcode is not in the UK: ${addresses[0].postalCode}")
+    }
+    return postcode
 }
 
 fun getNearbyPostboxes(

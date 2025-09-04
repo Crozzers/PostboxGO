@@ -2,6 +2,8 @@ package com.crozzers.postboxgo
 
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 enum class Monarch(val displayName: String) {
     NONE("Unmarked"),
@@ -24,21 +26,36 @@ data class Postbox(
     var monarch: Monarch,  // var because we can edit this later
     val dateRegistered: String,
     val name: String,
-    val type: String?,
+    var type: String?,
     /**
      * Whether we can verify if the user has actually visited this postbox
      * in person, or just added it from map view
      */
-    var verified: Boolean = true
+    var verified: Boolean = true,
+    /**
+     * Whether the postbox is currently in service
+     */
+    val inactive: Boolean = false
 ) {
     companion object {
+        /**
+         * Create a Postbox data class instance from the [DetailedPostboxInfo] returned by Royal
+         * Mail APIs.
+         *
+         * @param pb The postbox info
+         * @param monarch The monarch to mark the postbox as
+         * @param verified Whether the user has physically visited the postbox
+         */
+        @OptIn(ExperimentalUuidApi::class)
         fun fromDetailedPostboxInfo(
             pb: DetailedPostboxInfo,
             monarch: Monarch = Monarch.NONE,
             verified: Boolean = true
         ): Postbox {
             return Postbox(
-                id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}",
+                id =
+                    if (pb.type.lowercase() == "inactive") Uuid.random().toString()
+                    else "${pb.officeDetails.postcode} ${pb.officeDetails.address1}",
                 coords = Pair(
                     pb.locationDetails.latitude,
                     pb.locationDetails.longitude,
@@ -47,7 +64,8 @@ data class Postbox(
                 dateRegistered = LocalDateTime.now().toString(),
                 name = pb.officeDetails.name,
                 type = pb.officeDetails.address3,
-                verified = verified
+                verified = verified,
+                inactive = pb.type.lowercase() == "inactive"
             )
         }
     }

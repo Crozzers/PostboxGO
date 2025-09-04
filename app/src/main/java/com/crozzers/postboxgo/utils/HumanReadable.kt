@@ -8,7 +8,7 @@ fun humanReadableDate(date: String): String {
     var parsed: LocalDateTime?
     try {
         parsed = LocalDateTime.parse(date)
-    } catch (e: DateTimeParseException) {
+    } catch (_: DateTimeParseException) {
         return date
     }
     return parsed.format(
@@ -17,7 +17,7 @@ fun humanReadableDate(date: String): String {
 }
 
 fun humanReadablePostboxName(name: String): String {
-    return Regex("""\b([a-z])""").replace(name.lowercase()) { it ->
+    return Regex("""\b([a-z])|\(([a-z0-9 ]+)\)""").replace(name.lowercase()) { it ->
         it.value.uppercase()
     }
 }
