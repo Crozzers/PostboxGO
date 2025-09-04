@@ -1,3 +1,15 @@
+## [1.0.0-alpha.7] - 2025-09-04
+
+### Bug Fixes
+
+* avoid hitting RM API if location is not in UK ([b8b4554](https://github.com/Crozzers/PostboxGO/commit/b8b45543a23d13d23bf45ed40cae405012275adc))
+
+
+### Features
+
+* add ability to register inactive postboxes ([1c96f4f](https://github.com/Crozzers/PostboxGO/commit/1c96f4f16218271b61a77a8314ade68779661b16))
+
+
 ## [1.0.0-alpha.6] - 2025-09-01
 
 ### Features
@@ -54,3 +66,4 @@
 [1.0.0-alpha.4]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.3...1.0.0-alpha.4
 [1.0.0-alpha.5]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.4...1.0.0-alpha.5
 [1.0.0-alpha.6]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.5...1.0.0-alpha.6
+[1.0.0-alpha.7]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.6...1.0.0-alpha.7
