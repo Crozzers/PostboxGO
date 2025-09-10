@@ -49,7 +49,8 @@ fun getNearbyPostboxes(
     }
 
     CoroutineScope(Dispatchers.IO).launch {
-        var postboxData: List<DetailedPostboxInfo>? = getPostboxesFromCache(context, postcode)
+        var postboxData: MutableList<DetailedPostboxInfo>? =
+            getPostboxesFromCache(context, postcode)?.toMutableList()
         if (postboxData != null) {
             callback(postboxData)
             return@launch

@@ -14,25 +14,16 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -44,6 +35,7 @@ import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
+import com.crozzers.postboxgo.ui.components.DropdownMenu
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
 import com.crozzers.postboxgo.utils.clearPostboxData
 import kotlinx.coroutines.CoroutineScope
@@ -80,7 +72,7 @@ fun SettingsView(saveFile: SaveFile) {
         Spacer(modifier = Modifier.padding(16.dp))
         SaveFileManagement(saveFile)
         Spacer(modifier = Modifier.padding(16.dp))
-        ClearPBCacheButton(modifier = Modifier.padding(16.dp))
+        ClearPBCacheButton()
         Spacer(modifier = Modifier.padding(16.dp))
         HorizontalDivider(Modifier)
         Spacer(modifier = Modifier.padding(8.dp))
@@ -91,88 +83,35 @@ fun SettingsView(saveFile: SaveFile) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColourSchemeDropdown(selectedScheme: State<String>, onChange: (s: String) -> Unit) {
-    var dropdownExpanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = dropdownExpanded,
-        onExpandedChange = { dropdownExpanded = !dropdownExpanded },
-        modifier = Modifier.fillMaxWidth()
+    DropdownMenu(
+        "Colour Scheme",
+        ColourSchemes.entries.map { s -> s.name },
+        selectedScheme.value
     ) {
-        OutlinedTextField(
-            value = selectedScheme.value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(text = "Colour Scheme") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedLabelColor = MaterialTheme.colorScheme.outline,
-            )
-        )
-        ExposedDropdownMenu(
-            expanded = dropdownExpanded,
-            onDismissRequest = { dropdownExpanded = false }
-        ) {
-            ColourSchemes.entries.forEach { scheme ->
-                DropdownMenuItem(
-                    text = { Text(scheme.name) },
-                    onClick = {
-                        dropdownExpanded = false
-                        onChange(scheme.name)
-                    }
-                )
-            }
+        if (it != null) {
+            onChange(it)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomepageSortOption(
     selectedSortOption: State<String>,
     selectedSortDirection: State<String>,
     onChange: (s: String, d: String) -> Unit
 ) {
-    var dropdownExpanded by remember { mutableStateOf(false) }
-
     Column {
         Text("Homepage sort options:", style = MaterialTheme.typography.titleMedium)
 
         Spacer(Modifier.padding(4.dp))
 
-        ExposedDropdownMenuBox(
-            expanded = dropdownExpanded,
-            onExpandedChange = { dropdownExpanded = !dropdownExpanded },
-            modifier = Modifier.fillMaxWidth()
+        DropdownMenu(
+            "Sort Key",
+            SortOption.entries,
+            SortOption.valueOf(selectedSortOption.value)
         ) {
-            OutlinedTextField(
-                value = SortOption.valueOf(selectedSortOption.value).displayName,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(text = "Sort key") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedLabelColor = MaterialTheme.colorScheme.outline,
-                )
-            )
-            ExposedDropdownMenu(
-                expanded = dropdownExpanded,
-                onDismissRequest = { dropdownExpanded = false }
-            ) {
-                SortOption.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option.displayName) },
-                        onClick = {
-                            dropdownExpanded = false
-                            onChange(option.name, selectedSortDirection.value)
-                        }
-                    )
-                }
+            if (it != null) {
+                onChange(it.name, selectedSortDirection.value)
             }
         }
 
@@ -234,7 +173,7 @@ fun SaveFileManagement(saveFile: SaveFile) {
 }
 
 @Composable
-fun ClearPBCacheButton(modifier: Modifier = Modifier) {
+fun ClearPBCacheButton() {
     val context = LocalContext.current
     Button(onClick = {
         CoroutineScope(Dispatchers.IO).launch {
