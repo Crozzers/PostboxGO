@@ -160,7 +160,20 @@ fun PostboxDetails(postbox: Postbox) {
                     )
                 }
             }
-            Text(text = "ID: ${postbox.id}")
+            if (postbox.double != null) {
+                var l: String?
+                var r: String?
+                if (postbox.name.contains("(l)", ignoreCase = true)) {
+                    l = postbox.id
+                    r = postbox.double
+                } else {
+                    l = postbox.double
+                    r = postbox.id
+                }
+                Text("ID: $l (L), $r (R)")
+            } else {
+                Text(text = "ID: ${postbox.id}")
+            }
             Text(text = "Type: ${postbox.type ?: "Unknown"}")
             Text(text = "Monarch: ${postbox.monarch.displayName}")
             Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")

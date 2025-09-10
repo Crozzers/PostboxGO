@@ -58,12 +58,12 @@ import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.PostOfficeDetails
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.ui.components.DropdownMenu
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.PostboxIcon
 import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
-import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.crozzers.postboxgo.utils.isPostboxVerified
 import com.crozzers.postboxgo.utils.posToUKPostcode
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -72,11 +72,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
-import kotlin.uuid.ExperimentalUuidApi
 
 private const val LOG_TAG = "AddPostbox"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostbox(
     locationClient: FusedLocationProviderClient,
@@ -170,6 +168,7 @@ fun AddPostbox(
                 selectedPostbox,
                 selectedMonarch
             ) { p, m ->
+                Log.d(LOG_TAG, "Nearby postbox ($p) selected with monarch $m")
                 selectedPostbox = p
                 selectedMonarch = m
                 verified = true
@@ -180,6 +179,7 @@ fun AddPostbox(
                 selectedPostbox,
                 selectedMonarch
             ) { p, m ->
+                Log.d(LOG_TAG, "Postbox ($p) selected from map with monarch $m")
                 selectedPostbox = p
                 selectedMonarch = m
                 verified = false
@@ -189,6 +189,7 @@ fun AddPostbox(
             2 -> AddInactivePostbox(
                 locationClient, selectedPostbox, selectedMonarch
             ) { p, m ->
+                Log.d(LOG_TAG, "Inactive postbox ($p) selected with monarch $m")
                 selectedPostbox = p
                 selectedMonarch = m
                 verified = false
@@ -229,7 +230,6 @@ fun AddPostbox(
 }
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
 fun AddNearbyPostbox(
     locationClient: FusedLocationProviderClient,
@@ -601,7 +601,6 @@ fun AddInactivePostbox(
 
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
 fun SelectNearbyPostbox(
     locationClient: FusedLocationProviderClient,
@@ -635,7 +634,6 @@ fun SelectNearbyPostbox(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectPostbox(
     postboxes: List<DetailedPostboxInfo>,
@@ -644,99 +642,28 @@ fun SelectPostbox(
     onClick: ((expanded: Boolean) -> Unit)? = null,
     selectionCallback: (p: DetailedPostboxInfo) -> Unit
 ) {
-    var postboxDropdownExpanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(
-        expanded = postboxDropdownExpanded,
-        onExpandedChange = {
-            postboxDropdownExpanded = !postboxDropdownExpanded
-            onClick?.invoke(postboxDropdownExpanded)
-        },
-        modifier = Modifier.fillMaxWidth()
+    DropdownMenu(
+        "Postbox",
+        postboxes,
+        selectedPostbox,
+        loadingMessage,
+        onClick
     ) {
-        OutlinedTextField(
-            value =
-                if (selectedPostbox == null) "Select a postbox"
-                else humanReadablePostboxName(selectedPostbox.officeDetails.name) +
-                        " (${selectedPostbox.officeDetails.postcode} ${selectedPostbox.officeDetails.address1})" +
-                        " (${selectedPostbox.locationDetails.distance} miles away)",
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(text = "Postbox") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = postboxDropdownExpanded) },
-            modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedLabelColor = MaterialTheme.colorScheme.outline,
-            ),
-            singleLine = true
-        )
-        ExposedDropdownMenu(
-            expanded = postboxDropdownExpanded,
-            onDismissRequest = { postboxDropdownExpanded = false }
-        ) {
-            postboxes.forEach { postbox ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            humanReadablePostboxName(postbox.officeDetails.name) +
-                                    " (${postbox.officeDetails.postcode} ${postbox.officeDetails.address1})" +
-                                    " (${postbox.locationDetails.distance} miles away)"
-                        )
-                    },
-                    onClick = {
-                        postboxDropdownExpanded = false
-                        selectionCallback(postbox)
-                    }
-                )
-            }
-            if (postboxes.isEmpty()) {
-                DropdownMenuItem(
-                    text = { Text(loadingMessage) },
-                    onClick = { },
-                    enabled = false
-                )
-            }
+        if (it != null) {
+            selectionCallback(it)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> Unit) {
-    var monarchDropdownExpanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = monarchDropdownExpanded,
-        onExpandedChange = { monarchDropdownExpanded = !monarchDropdownExpanded },
-        modifier = Modifier.fillMaxWidth()
+    DropdownMenu(
+        "Monarch",
+        Monarch.entries,
+        selectedMonarch
     ) {
-        OutlinedTextField(
-            value = selectedMonarch.displayName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(text = "Monarch") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monarchDropdownExpanded) },
-            modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedLabelColor = MaterialTheme.colorScheme.outline,
-            )
-        )
-        ExposedDropdownMenu(
-            expanded = monarchDropdownExpanded,
-            onDismissRequest = { monarchDropdownExpanded = false }
-        ) {
-            Monarch.entries.forEach { monarch ->
-                DropdownMenuItem(
-                    text = { Text(monarch.displayName) },
-                    onClick = {
-                        monarchDropdownExpanded = false
-                        selectionCallback(monarch)
-                    }
-                )
-            }
+        if (it != null) {
+            selectionCallback(it)
         }
     }
 }

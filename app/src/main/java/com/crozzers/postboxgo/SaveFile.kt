@@ -21,19 +21,36 @@ import java.time.format.DateTimeFormatter
 private const val LOG_TAG = "SaveFile"
 
 class SaveFile(private val context: Context) {
-    private var data: SaveDataV2
+    private var data: SaveDataV2 = SaveDataV2(2, mutableMapOf())
+        set(value) {
+            field = value
+            doubles = mutableMapOf()
+            value.postboxes.forEach { id, pb ->
+                if (pb.double != null) {
+                    doubles[pb.double] = id
+                }
+            }
+        }
     private var fileName = "save.json"
+
+    /**
+     * Mapping of doubles IDs to their counterpart IDs. Makes lookups quicker
+     */
+    private var doubles: MutableMap<String, String> = mutableMapOf()
 
     init {
         val file = File(context.filesDir, fileName)
-        data = if (file.exists()) {
+        if (file.exists()) {
             try {
-                decode(file.readText())
+                data = decode(file.readText())
+                Log.i(LOG_TAG, "Loaded save data from $file")
             } catch (e: SerializationException) {
-                SaveDataV2(2, mutableMapOf<String, Postbox>())
+                data = SaveDataV2(2, mutableMapOf<String, Postbox>())
+                Log.e(LOG_TAG, "Failed to load save data from $file", e)
             }
         } else {
-            SaveDataV2(2, mutableMapOf<String, Postbox>())
+            data = SaveDataV2(2, mutableMapOf<String, Postbox>())
+            Log.i(LOG_TAG, "Save file does not exist")
         }
     }
 
@@ -47,16 +64,20 @@ class SaveFile(private val context: Context) {
     }
 
     fun getPostbox(id: String): Postbox? {
-        return data.postboxes[id]
+        return data.postboxes[id] ?: data.postboxes[doubles[id]]
     }
 
     fun addPostbox(postbox: Postbox) {
         data.postboxes[postbox.id] = postbox
+        if (postbox.double != null) {
+            doubles[postbox.double] = postbox.id
+        }
         save()
     }
 
     fun removePostbox(postbox: Postbox) {
         if (data.postboxes.remove(postbox.id) != null) {
+            doubles.remove(postbox.id)
             save()
         }
     }

@@ -79,6 +79,9 @@ fun ListView(
                     // remove spaces for ID because going back and adding a space to your search query would be annoying
                     it.id.replace(" ", "")
                         .contains(searchQuery.replace(" ", ""), ignoreCase = true) ||
+                    // if it's a double then also search the double's ID
+                    (it.double != null && it.double.replace(" ", "")
+                        .contains(searchQuery.replace(" ", ""), ignoreCase = true)) ||
                     it.type?.contains(searchQuery, ignoreCase = true) == true ||
                     it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
                     humanReadableDate(it.dateRegistered).contains(
@@ -148,7 +151,11 @@ enum class SortOption(val displayName: String) {
     ID("ID"),
     DATE("Date"),
     TYPE("Type"),
-    MONARCH("Monarch"),
+    MONARCH("Monarch");
+
+    override fun toString(): String {
+        return displayName
+    }
 }
 
 enum class SortDirection(val displayName: String) {
@@ -169,15 +176,24 @@ fun PostboxCard(postbox: Postbox, onClick: (postbox: Postbox) -> Unit) {
         Row {
             PostboxIcon(Modifier.fillMaxWidth(0.2f), type = postbox.type, postbox.inactive)
             Column(Modifier.padding(start = 0.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)) {
-                var id = ""
-                // don't show UUIDs in the homepage. They are long and ugly.
-                // This is also a hangover from v1 savefiles, which didn't use the proper IDs
-                if (!"[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
-                    id = " (${postbox.id})"
+                val id = if ("[a-z0-9-]{32,36}".toRegex().matches(postbox.id)) {
+                    // don't show UUIDs in the homepage. They are long and ugly.
+                    // V1 savefiles and inactive postboxes use UUIDs
+                    ""
+                } else if (postbox.double != null) {
+                    // if it's a double then show both IDs, and try to show LHS first
+                    if (postbox.name.contains("(L)", ignoreCase = true)) {
+                        " (${postbox.id}, ${postbox.double})"
+                    } else {
+                        " (${postbox.double}, ${postbox.id})"
+                    }
+                } else {
+                    // postbox is not double, or inactive so just show it normally
+                    " (${postbox.id})"
                 }
                 Row {
                     Text(
-                        text = "${humanReadablePostboxName(postbox.name)}$id",
+                        text = "${postbox}$id",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         maxLines = 2, overflow = TextOverflow.Ellipsis,

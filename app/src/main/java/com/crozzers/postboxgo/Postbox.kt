@@ -1,5 +1,6 @@
 package com.crozzers.postboxgo
 
+import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 import kotlin.uuid.ExperimentalUuidApi
@@ -13,7 +14,11 @@ enum class Monarch(val displayName: String) {
     EDWARD8("Edward 8th (E VIII R)"),
     GEORGE6("George 6th (G VI R)"),
     ELIZABETH2("Elizabeth 2nd (E II R)"),
-    CHARLES3("Charles 3rd (C III R)")
+    CHARLES3("Charles 3rd (C III R)");
+
+    override fun toString(): String {
+        return displayName
+    }
 }
 
 /**
@@ -35,8 +40,20 @@ data class Postbox(
     /**
      * Whether the postbox is currently in service
      */
-    val inactive: Boolean = false
+    val inactive: Boolean = false,
+    /**
+     * If the postbox is a double postbox, this will be the ID of the other half
+     */
+    val double: String? = null
 ) {
+    override fun toString(): String {
+        var name = name
+        if (double != null) {
+            name = name.replace(Regex("""( \([LR]\))"""), "")
+        }
+        return humanReadablePostboxName(name)
+    }
+
     companion object {
         /**
          * Create a Postbox data class instance from the [DetailedPostboxInfo] returned by Royal
@@ -52,6 +69,13 @@ data class Postbox(
             monarch: Monarch = Monarch.NONE,
             verified: Boolean = true
         ): Postbox {
+            var name: String = pb.officeDetails.name
+            var doubleId: String? = null
+            if (pb.double != null) {
+                name = pb.officeDetails.name.replace(Regex("""( \([LR]\))"""), "")
+                doubleId =
+                    "${pb.double!!.officeDetails.postcode} ${pb.double!!.officeDetails.address1}"
+            }
             return Postbox(
                 id =
                     if (pb.type.lowercase() == "inactive") Uuid.random().toString()
@@ -62,10 +86,11 @@ data class Postbox(
                 ),
                 monarch = monarch,
                 dateRegistered = LocalDateTime.now().toString(),
-                name = pb.officeDetails.name,
+                name = name,
                 type = pb.officeDetails.address3,
                 verified = verified,
-                inactive = pb.type.lowercase() == "inactive"
+                inactive = pb.type.lowercase() == "inactive",
+                double = doubleId
             )
         }
     }
@@ -104,5 +129,27 @@ data class LocationDetails(
 data class DetailedPostboxInfo(
     val type: String,
     val officeDetails: PostOfficeDetails,
-    val locationDetails: LocationDetails
-)
+    val locationDetails: LocationDetails,
+    /**
+     * This is not returned by RM APIs, but we can use this space to dump details about
+     * double postboxes into
+     */
+    var double: DetailedPostboxInfo? = null
+) {
+    fun isDouble(): Boolean {
+        val name = officeDetails.name.lowercase()
+        val type = officeDetails.address3.lowercase()
+        return (type.contains("c type") || (type.contains("type c") && !type.contains("wall box")))
+                && (name.contains("(l)") || name.contains("(r)"))
+    }
+
+    override fun toString(): String {
+        var name = humanReadablePostboxName(officeDetails.name)
+        if (isDouble()) {
+            name = name.replace(Regex("""( \([LR]\))"""), "")
+        }
+        return name +
+                " (${officeDetails.postcode} ${officeDetails.address1})" +
+                " (${locationDetails.distance} miles away)"
+    }
+}

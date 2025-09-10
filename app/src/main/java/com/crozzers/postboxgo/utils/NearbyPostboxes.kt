@@ -85,11 +85,51 @@ fun getNearbyPostboxes(
                 )
                 return@launch
             }
+            val doubles = mutableListOf<DetailedPostboxInfo>()
             postboxData = JsonParser.decodeFromString<List<DetailedPostboxInfo>>(
                 inputStream.bufferedReader().readText()
-            ).filter { postbox -> postbox.type == "PB" }
+            ).filter { pb ->
+                if (pb.type != "PB") {
+                    return@filter false
+                }
+                // if it's a single then add it straight away
+                if (!pb.isDouble()) {
+                    return@filter true
+                }
+                // for doubles we need to find the other half
+                // nested iteration but this list is going to be 50 items max
+                for (double in doubles) {
+                    val locationResult = FloatArray(1)
+                    Location.distanceBetween(
+                        pb.locationDetails.latitude.toDouble(),
+                        pb.locationDetails.longitude.toDouble(),
+                        double.locationDetails.latitude.toDouble(),
+                        double.locationDetails.longitude.toDouble(),
+                        locationResult
+                    )
+                    if (
+                        locationResult[0] < 100 &&
+                        double.officeDetails.postcode == pb.officeDetails.postcode
+                        && double.officeDetails.name.lowercase().replace(
+                            Regex("""\([lr]\)"""),
+                            ""
+                        ) == pb.officeDetails.name.lowercase().replace(Regex("""\([lr]\)"""), "")
+                    ) {
+                        doubles.remove(double)
+                        pb.double = double
+                        return@filter true
+                    }
+                }
+                doubles += pb
+                return@filter false
+
+            }.toMutableList()
+            // add the remaining double postboxes that we weren't able to match up and sort
+            // by distance from user
+            postboxData.addAll(doubles)
+            postboxData.sortBy { it.locationDetails.distance }
         }
-        if (postboxData != null) {
+        if (postboxData?.isNotEmpty() == true) {
             callback(postboxData)
             cachePostboxData(context, postcode, postboxData)
         }
