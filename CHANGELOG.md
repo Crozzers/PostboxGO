@@ -1,3 +1,15 @@
+## [1.0.0-alpha.8] - 2025-09-10
+
+### Bug Fixes
+
+* scrolling not enabled in settings view ([1997e9d](https://github.com/Crozzers/PostboxGO/commit/1997e9dbf0b4c363674f6871c890b548a0f5d211))
+
+
+### Features
+
+* better handling of double postboxes ([8c350a8](https://github.com/Crozzers/PostboxGO/commit/8c350a87e1d764b863d0412c298f1ea9bcc80a3a))
+
+
 ## [1.0.0-alpha.7] - 2025-09-04
 
 ### Bug Fixes
@@ -67,3 +79,4 @@
 [1.0.0-alpha.5]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.4...1.0.0-alpha.5
 [1.0.0-alpha.6]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.5...1.0.0-alpha.6
 [1.0.0-alpha.7]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.6...1.0.0-alpha.7
+[1.0.0-alpha.8]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.7...1.0.0-alpha.8
