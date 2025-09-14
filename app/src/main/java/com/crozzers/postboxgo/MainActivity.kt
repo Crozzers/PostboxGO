@@ -7,19 +7,27 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowHeightSizeClass
 import com.crozzers.postboxgo.ui.components.BottomBar
+import com.crozzers.postboxgo.ui.components.NavRail
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.ui.components.TopBar
 import com.crozzers.postboxgo.ui.theme.PostboxGOTheme
@@ -72,80 +80,80 @@ class MainActivity : ComponentActivity() {
         setContent {
             PostboxGOTheme {
                 val navController = rememberNavController()
-                var visible by remember { mutableStateOf(true) }
-                var listViewSelected by remember { mutableStateOf(true) }
-
-                navController.addOnDestinationChangedListener { _, destination, _ ->
-                    visible =
-                        destination.route == Routes.ListView.route || destination.route == Routes.MapView.route
-                    listViewSelected = destination.route == Routes.ListView.route
-                }
+                val compact =
+                    currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(), topBar = {
-                        TopBar(navController)
-                    },
-                    bottomBar = { BottomBar(navController, visible, listViewSelected) }
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = { TopBar(navController) },
+                    bottomBar = { if (!compact) BottomBar(navController) }
                 ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = Routes.ListView.route,
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                    ) {
-                        composable(Routes.ListView.route) {
-                            ListView(
-                                (applicationContext as App).saveFile.getPostboxes()
-                            ) { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") }
+                    Row(Modifier.padding(innerPadding)) {
+                        if (compact) {
+                            NavRail(navController)
                         }
-                        composable(Routes.MapView.route) {
-                            PostboxMap(
-                                (applicationContext as App).saveFile.getPostboxes().values,
-                                Modifier.fillMaxSize(),
-                                onPostboxClick = { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") },
-                                locationClient = locationClient
-                            )
-                        }
-                        composable(Routes.AddPostbox.route) {
-                            AddPostbox(locationClient, (applicationContext as App).saveFile, { p ->
-                                (applicationContext as App).saveFile.addPostbox(p)
-                                navController.navigate(Routes.ListView.route)
-                            })
-                        }
-                        composable("${Routes.ViewPostbox.route}/{id}") {
-                            val postbox = (applicationContext as App).saveFile.getPostbox(
-                                it.arguments?.getString("id") ?: ""
-                            )
-                            if (postbox == null) {
-                                navController.navigate(Routes.ListView.route)
-                                return@composable
+                        NavHost(
+                            navController = navController,
+                            startDestination = Routes.ListView.route,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            composable(Routes.ListView.route) {
+                                ListView(
+                                    (applicationContext as App).saveFile.getPostboxes()
+                                ) { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") }
                             }
-                            DetailsView(
-                                postbox,
-                                (applicationContext as App).saveFile
-                            ) { navController.navigate(Routes.ListView.route) }
-                        }
-                        composable("${Routes.EditPostbox.route}/{id}") {
-                            val saveFile = (applicationContext as App).saveFile
-                            val postbox = saveFile.getPostbox(
-                                it.arguments?.getString("id") ?: ""
-                            )
-                            if (postbox == null) {
-                                navController.navigate(Routes.ListView.route)
-                                return@composable
+                            composable(Routes.MapView.route) {
+                                PostboxMap(
+                                    (applicationContext as App).saveFile.getPostboxes().values,
+                                    Modifier.fillMaxSize(),
+                                    onPostboxClick = { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") },
+                                    locationClient = locationClient
+                                )
                             }
-                            EditPostbox(
-                                locationClient,
-                                saveFile,
-                                postbox,
-                            ) {
-                                saveFile.save()
-                                navController.navigate(Routes.ListView.route)
+                            composable(Routes.AddPostbox.route) {
+                                AddPostbox(
+                                    locationClient,
+                                    (applicationContext as App).saveFile,
+                                    { p ->
+                                        (applicationContext as App).saveFile.addPostbox(p)
+                                        navController.navigate(Routes.ListView.route)
+                                    })
                             }
-                        }
-                        composable(Routes.Settings.route) {
-                            SettingsView((applicationContext as App).saveFile)
+                            composable("${Routes.ViewPostbox.route}/{id}") {
+                                val postbox = (applicationContext as App).saveFile.getPostbox(
+                                    it.arguments?.getString("id") ?: ""
+                                )
+                                if (postbox == null) {
+                                    navController.navigate(Routes.ListView.route)
+                                    return@composable
+                                }
+                                DetailsView(
+                                    postbox,
+                                    (applicationContext as App).saveFile
+                                ) { navController.navigate(Routes.ListView.route) }
+                            }
+                            composable("${Routes.EditPostbox.route}/{id}") {
+                                val saveFile = (applicationContext as App).saveFile
+                                val postbox = saveFile.getPostbox(
+                                    it.arguments?.getString("id") ?: ""
+                                )
+                                if (postbox == null) {
+                                    navController.navigate(Routes.ListView.route)
+                                    return@composable
+                                }
+                                EditPostbox(
+                                    locationClient,
+                                    saveFile,
+                                    postbox,
+                                ) {
+                                    saveFile.save()
+                                    navController.navigate(Routes.ListView.route)
+                                }
+                            }
+                            composable(Routes.Settings.route) {
+                                SettingsView((applicationContext as App).saveFile)
+                            }
                         }
                     }
                 }
@@ -154,11 +162,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class Routes(val route: String, val displayName: String) {
-    ListView("list_view", "List View"),
-    MapView("map_view", "Map View"),
-    AddPostbox("add_postbox", "Add Postbox"),
-    ViewPostbox("view_postbox", "Postbox Details"),
-    EditPostbox("edit_postbox", "Edit Postbox"),
-    Settings("settings", "Settings"),
+enum class Routes(val route: String, val displayName: String, val icon: ImageVector) {
+    ListView("list_view", "List View", Icons.AutoMirrored.Filled.List),
+    MapView("map_view", "Map View", Icons.Filled.LocationOn),
+    Settings("settings", "Settings", Icons.Filled.Settings),
+    AddPostbox("add_postbox", "Register", Icons.Filled.Add),
+    ViewPostbox("view_postbox", "Postbox Details", Icons.Filled.Info),
+    EditPostbox("edit_postbox", "Edit Postbox", Icons.Filled.Edit),
 }

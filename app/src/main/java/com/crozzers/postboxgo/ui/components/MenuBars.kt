@@ -1,21 +1,22 @@
 package com.crozzers.postboxgo.ui.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,52 +52,77 @@ fun TopBar(navController: NavController) {
                     }
                 }
             }
-            // settings first because it's harder to reach and lesser used
-            IconButton(onClick = {
-                navController.navigate(Routes.Settings.route)
-            }) {
-                Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
-            }
-            // homepage next as it's less used than adding
-            IconButton(onClick = { navController.navigate(Routes.ListView.route) }) {
-                Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
-            }
-            // most used, whack it in thumb's reach in the top right
-            IconButton(onClick = {
-                navController.navigate(Routes.AddPostbox.route)
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.Add, contentDescription = "Register Postbox"
-                )
-            }
         }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomBar(navController: NavController, visible: Boolean, isListView: Boolean) {
-    if (!visible) {
-        return
+fun BottomBar(navController: NavController) {
+    var currentRoute by remember {
+        mutableStateOf(
+            navController.currentDestination?.route ?: Routes.ListView.route
+        )
+    }
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentRoute = destination.route ?: Routes.ListView.route
     }
 
     NavigationBar {
-        NavigationBarItem(selected = isListView, onClick = {
-            navController.navigate(Routes.ListView.route)
-        }, icon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.List,
-                contentDescription = "List View"
+        for (route in Routes.entries) {
+            if (route == Routes.ViewPostbox || route == Routes.EditPostbox) {
+                continue
+            }
+            NavigationBarItem(
+                route.route == currentRoute,
+                {
+                    navController.navigate(route.route)
+                },
+                {
+                    Icon(
+                        imageVector = route.icon,
+                        contentDescription = route.displayName
+                    )
+                },
+                label = { Text(route.displayName) }
             )
-        }, label = { Text("List View") })
-        NavigationBarItem(selected = !isListView, onClick = {
-            navController.navigate(Routes.MapView.route)
-        }, icon = {
-            Icon(
-                imageVector = Icons.Filled.LocationOn,
-                contentDescription = "Map View"
-            )
-        }, label = { Text("Map View") }
+        }
+    }
+}
+
+@Composable
+fun NavRail(navController: NavController) {
+    val navEntry = navController.currentBackStackEntryAsState()
+    var currentRoute by remember {
+        mutableStateOf(
+            navEntry.value?.destination?.route ?: Routes.ListView.route
         )
+    }
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentRoute = destination.route ?: Routes.ListView.route
+    }
+
+    NavigationRail(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        for (route in Routes.entries) {
+            if (route == Routes.ViewPostbox || route == Routes.EditPostbox) {
+                continue
+            }
+
+            NavigationRailItem(
+                route.route == currentRoute,
+                {
+                    navController.navigate(route.route)
+                },
+                {
+                    Icon(
+                        imageVector = route.icon,
+                        contentDescription = route.displayName
+                    )
+                },
+                label = { Text(route.displayName) }
+            )
+        }
     }
 }

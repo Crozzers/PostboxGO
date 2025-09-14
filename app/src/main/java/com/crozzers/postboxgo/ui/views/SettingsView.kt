@@ -64,9 +64,11 @@ fun SettingsView(saveFile: SaveFile) {
         preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
     }.collectAsState(initial = SortDirection.DESCENDING.name)
 
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .verticalScroll(rememberScrollState())) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
         ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
         Spacer(modifier = Modifier.padding(16.dp))
         HomepageSortOption(selectedSortOption, selectedSortDirection) { s, d ->
