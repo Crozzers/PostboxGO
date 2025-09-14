@@ -128,103 +128,109 @@ fun AddPostbox(
                 )
             }
         }
-    }
 
-    fun verifyPostbox(context: Context, p: DetailedPostboxInfo?) {
-        // if location permission enabled, run a quick verification check in the
-        // background
-        if (p != null && ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+
+        fun verifyPostbox(context: Context, p: DetailedPostboxInfo?) {
+            // if location permission enabled, run a quick verification check in the
+            // background
+            if (p != null && ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.i(
+                    LOG_TAG,
+                    "Running background verification check on ${p.officeDetails.name}"
+                )
+                isPostboxVerified(
+                    locationClient, Postbox.fromDetailedPostboxInfo(p)
+                ) { state ->
+                    // location grabs can take time so check if selected postbox is
+                    // still the one we're checking
+                    if (state && selectedPostbox == p) {
+                        verified = true
+                    }
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Log.i(
-                LOG_TAG,
-                "Running background verification check on ${p.officeDetails.name}"
-            )
-            isPostboxVerified(
-                locationClient, Postbox.fromDetailedPostboxInfo(p)
-            ) { state ->
-                // location grabs can take time so check if selected postbox is
-                // still the one we're checking
-                if (state && selectedPostbox == p) {
+            val context = LocalContext.current
+            when (tabIndex) {
+                0 -> AddNearbyPostbox(
+                    Modifier.weight(1f),
+                    locationClient,
+                    saveFile,
+                    selectedPostbox,
+                    selectedMonarch
+                ) { p, m ->
+                    Log.d(LOG_TAG, "Nearby postbox ($p) selected with monarch $m")
+                    selectedPostbox = p
+                    selectedMonarch = m
                     verified = true
                 }
-            }
-        }
-    }
 
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        val context = LocalContext.current
-        when (tabIndex) {
-            0 -> AddNearbyPostbox(
-                locationClient,
-                saveFile,
-                selectedPostbox,
-                selectedMonarch
-            ) { p, m ->
-                Log.d(LOG_TAG, "Nearby postbox ($p) selected with monarch $m")
-                selectedPostbox = p
-                selectedMonarch = m
-                verified = true
-            }
-
-            1 -> AddPostboxFromMap(
-                saveFile,
-                selectedPostbox,
-                selectedMonarch
-            ) { p, m ->
-                Log.d(LOG_TAG, "Postbox ($p) selected from map with monarch $m")
-                selectedPostbox = p
-                selectedMonarch = m
-                verified = false
-                verifyPostbox(context, p)
-            }
-
-            2 -> AddInactivePostbox(
-                locationClient, selectedPostbox, selectedMonarch
-            ) { p, m ->
-                Log.d(LOG_TAG, "Inactive postbox ($p) selected with monarch $m")
-                selectedPostbox = p
-                selectedMonarch = m
-                verified = false
-                verifyPostbox(context, p)
-            }
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Button(
-            onClick = {
-                errorMessage = null
-                if (selectedPostbox == null) {
-                    errorMessage = "Please select a postbox"
-                    return@Button
+                1 -> AddPostboxFromMap(
+                    Modifier.weight(1f),
+                    saveFile,
+                    selectedPostbox,
+                    selectedMonarch
+                ) { p, m ->
+                    Log.d(LOG_TAG, "Postbox ($p) selected from map with monarch $m")
+                    selectedPostbox = p
+                    selectedMonarch = m
+                    verified = false
+                    verifyPostbox(context, p)
                 }
-                selectedPostbox?.let {
-                    callback(
-                        Postbox.fromDetailedPostboxInfo(
-                            it, selectedMonarch,
-                            verified = verified
+
+                2 -> AddInactivePostbox(
+                    Modifier.weight(1f),
+                    locationClient,
+                    selectedPostbox,
+                    selectedMonarch
+                ) { p, m ->
+                    Log.d(LOG_TAG, "Inactive postbox ($p) selected with monarch $m")
+                    selectedPostbox = p
+                    selectedMonarch = m
+                    verified = false
+                    verifyPostbox(context, p)
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Button(
+                onClick = {
+                    errorMessage = null
+                    if (selectedPostbox == null) {
+                        errorMessage = "Please select a postbox"
+                        return@Button
+                    }
+                    selectedPostbox?.let {
+                        callback(
+                            Postbox.fromDetailedPostboxInfo(
+                                it, selectedMonarch,
+                                verified = verified
+                            )
                         )
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Save Postbox")
-        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save Postbox")
+            }
 
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
@@ -232,6 +238,7 @@ fun AddPostbox(
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 @Composable
 fun AddNearbyPostbox(
+    modifier: Modifier = Modifier,
     locationClient: FusedLocationProviderClient,
     saveFile: SaveFile,
     selectedPostbox: DetailedPostboxInfo?,
@@ -253,36 +260,34 @@ fun AddNearbyPostbox(
 
     when (orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
-            SelectNearbyPostbox(
-                locationClient,
-                selectedPostbox,
-                saveFile,
-            ) { p ->
-                callback(p, selectedMonarch)
-            }
-
-            if (selectedPostbox != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                PostboxMap(
+            Column(modifier, verticalArrangement = Arrangement.Center) {
+                SelectNearbyPostbox(
+                    locationClient,
                     selectedPostbox,
-                    Modifier
-                        .fillMaxWidth()
-                        .height((screenHeight * 0.35).dp),
-                    locationClient = locationClient
-                )
+                    saveFile,
+                ) { p ->
+                    callback(p, selectedMonarch)
+                }
+
+                if (selectedPostbox != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PostboxMap(
+                        selectedPostbox,
+                        Modifier
+                            .fillMaxWidth()
+                            .height((screenHeight * 0.35).dp),
+                        locationClient = locationClient
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SelectMonarch(selectedMonarch) { m -> callback(selectedPostbox, m) }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SelectMonarch(selectedMonarch) { m -> callback(selectedPostbox, m) }
         }
 
         else -> {
-            Row(
-                Modifier
-                    .padding(8.dp)
-                    .height((screenHeight * 0.35).dp)
-            ) {
+            Row(modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.fillMaxWidth(0.5f)) {
                     SelectNearbyPostbox(locationClient, selectedPostbox, saveFile) { p ->
                         callback(p, selectedMonarch)
@@ -309,6 +314,7 @@ fun AddNearbyPostbox(
 
 @Composable
 fun AddPostboxFromMap(
+    modifier: Modifier = Modifier,
     saveFile: SaveFile,
     selectedPostbox: DetailedPostboxInfo?,
     selectedMonarch: Monarch,
@@ -394,7 +400,7 @@ fun AddPostboxFromMap(
 
     when (orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
-            Column(Modifier.padding(4.dp)) {
+            Column(modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
                 Box(Modifier.fillMaxHeight(0.5f)) {
                     GoogleMap(
                         cameraPositionState = cameraPosState,
@@ -421,10 +427,11 @@ fun AddPostboxFromMap(
 
         else -> {
             Row(
-                Modifier
+                modifier
                     .padding(4.dp)
                     .fillMaxWidth()
-                    .height((screenHeight * 0.35).dp)
+                    .height((screenHeight * 0.35).dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 selectionComponent(Modifier.fillMaxWidth(0.5f))
                 Spacer(Modifier.size(4.dp))
@@ -456,6 +463,7 @@ fun AddPostboxFromMap(
 
 @Composable
 fun AddInactivePostbox(
+    modifier: Modifier = Modifier,
     locationClient: FusedLocationProviderClient,
     selectedPostbox: DetailedPostboxInfo?,
     selectedMonarch: Monarch,
@@ -482,11 +490,12 @@ fun AddInactivePostbox(
     val cameraPosState by remember { mutableStateOf(CameraPositionState()) }
     if (selectedPostbox != null) {
         cameraPosState.move(
-            CameraUpdateFactory.newLatLng(
+            CameraUpdateFactory.newLatLngZoom(
                 LatLng(
                     selectedPostbox.locationDetails.latitude.toDouble(),
                     selectedPostbox.locationDetails.longitude.toDouble()
-                )
+                ),
+                15f
             )
         )
     } else if (locationPermissionGranted) {
@@ -543,7 +552,7 @@ fun AddInactivePostbox(
 
     when (orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
-            Column(Modifier.padding(4.dp)) {
+            Column(modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
                 Box(Modifier.fillMaxHeight(0.5f)) {
                     GoogleMap(
                         cameraPositionState = cameraPosState,
@@ -568,10 +577,11 @@ fun AddInactivePostbox(
 
         else -> {
             Row(
-                Modifier
+                modifier
                     .padding(4.dp)
                     .fillMaxWidth()
-                    .height((screenHeight * 0.35).dp)
+                    .height((screenHeight * 0.35).dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 selectionComponent(Modifier.fillMaxWidth(0.5f))
                 Spacer(Modifier.size(4.dp))

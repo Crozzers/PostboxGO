@@ -12,14 +12,18 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.window.core.layout.WindowHeightSizeClass
 import com.crozzers.postboxgo.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +39,9 @@ fun TopBar(navController: NavController) {
         Routes.Settings.route -> Routes.Settings.displayName
         else -> "PostboxGO"
     }
+
+    val compact =
+        currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT
 
     TopAppBar(
         title = {
@@ -52,7 +59,9 @@ fun TopBar(navController: NavController) {
                     }
                 }
             }
-        }
+        },
+        // just shrink it slightly for smaller screens, as it's mostly useless real estate
+        expandedHeight = if (compact) TopAppBarDefaults.TopAppBarExpandedHeight - 12.dp else TopAppBarDefaults.TopAppBarExpandedHeight
     )
 }
 

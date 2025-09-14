@@ -111,10 +111,15 @@ fun EditPostbox(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             else -> {
-                Row(Modifier.padding(8.dp)) {
+                Row(
+                    Modifier
+                        .padding(8.dp)
+                        .weight(1f)
+                ) {
                     Column(Modifier.fillMaxWidth(0.5f)) {
                         if (!postbox.verified) {
                             VerifyPostbox(locationClient, postbox) {
@@ -134,16 +139,13 @@ fun EditPostbox(
                     Spacer(Modifier.padding(8.dp))
                     PostboxMap(
                         postbox,
-                        Modifier
-                            .fillMaxWidth()
-                            .height((screenHeight * 0.4).dp),
+                        Modifier.fillMaxSize(),
                         locationClient = locationClient
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
                 postbox.monarch = selectedMonarch
