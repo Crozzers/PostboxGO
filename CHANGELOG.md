@@ -1,3 +1,10 @@
+## [1.0.0-alpha.9] - 2025-09-14
+
+### Features
+
+* navigation tweaks and improvements for landscape phones ([71d2edf](https://github.com/Crozzers/PostboxGO/commit/71d2edfe286f3113a57dc8d947f857d087effec1))
+
+
 ## [1.0.0-alpha.8] - 2025-09-10
 
 ### Bug Fixes
@@ -80,3 +87,4 @@
 [1.0.0-alpha.6]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.5...1.0.0-alpha.6
 [1.0.0-alpha.7]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.6...1.0.0-alpha.7
 [1.0.0-alpha.8]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.7...1.0.0-alpha.8
+[1.0.0-alpha.9]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.8...1.0.0-alpha.9
