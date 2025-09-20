@@ -133,13 +133,27 @@ fun ListView(
                 )
             }
 
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(300.dp), modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Top
-            ) {
-                items(filteredAndSortedPostboxes) { postbox ->
-                    PostboxCard(postbox, onItemClick)
+            if (filteredAndSortedPostboxes.isEmpty()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("No postboxes found matching your query.", textAlign = TextAlign.Center)
+                    Text(
+                        "Click the plus icon in the top right to register a new postbox.",
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(300.dp), modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    items(filteredAndSortedPostboxes) { postbox ->
+                        PostboxCard(postbox, onItemClick)
+                    }
+
                 }
             }
         }
