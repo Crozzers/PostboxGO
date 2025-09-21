@@ -21,3 +21,7 @@ fun humanReadablePostboxName(name: String): String {
         it.value.uppercase()
     }
 }
+
+fun humanReadablePostboxType(type: String): String {
+    return humanReadablePostboxName(type).replace(Regex(" Postbox$"), "")
+}

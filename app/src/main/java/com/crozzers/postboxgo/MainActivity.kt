@@ -36,6 +36,7 @@ import com.crozzers.postboxgo.ui.views.DetailsView
 import com.crozzers.postboxgo.ui.views.EditPostbox
 import com.crozzers.postboxgo.ui.views.ListView
 import com.crozzers.postboxgo.ui.views.SettingsView
+import com.crozzers.postboxgo.ui.views.StatisticsView
 import com.crozzers.postboxgo.utils.removeStaleCachedPostboxData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -154,6 +155,9 @@ class MainActivity : ComponentActivity() {
                             composable(Routes.Settings.route) {
                                 SettingsView((applicationContext as App).saveFile)
                             }
+                            composable(Routes.Stats.route) {
+                                StatisticsView((applicationContext as App).saveFile)
+                            }
                         }
                     }
                 }
@@ -165,6 +169,7 @@ class MainActivity : ComponentActivity() {
 enum class Routes(val route: String, val displayName: String, val icon: ImageVector) {
     ListView("list_view", "List View", Icons.AutoMirrored.Filled.List),
     MapView("map_view", "Map View", Icons.Filled.LocationOn),
+    Stats("stats_view", "Statistics", Icons.Filled.Info),
     Settings("settings", "Settings", Icons.Filled.Settings),
     AddPostbox("add_postbox", "Register", Icons.Filled.Add),
     ViewPostbox("view_postbox", "Postbox Details", Icons.Filled.Info),

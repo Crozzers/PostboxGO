@@ -37,6 +37,7 @@ fun TopBar(navController: NavController) {
         Routes.AddPostbox.route -> Routes.AddPostbox.displayName
         Routes.EditPostbox.route -> Routes.EditPostbox.displayName
         Routes.Settings.route -> Routes.Settings.displayName
+        Routes.Stats.route -> Routes.Stats.displayName
         else -> "PostboxGO"
     }
 
