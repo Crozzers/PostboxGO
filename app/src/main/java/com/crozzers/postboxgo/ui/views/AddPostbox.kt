@@ -60,7 +60,7 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.DropdownMenu
 import com.crozzers.postboxgo.ui.components.PostboxMap
-import com.crozzers.postboxgo.utils.PostboxIcon
+import com.crozzers.postboxgo.ui.components.PostboxIcon
 import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes

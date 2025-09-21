@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.Setting
 import com.crozzers.postboxgo.settings
-import com.crozzers.postboxgo.utils.PostboxIcon
+import com.crozzers.postboxgo.ui.components.PostboxIcon
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.coroutines.flow.map

@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.utils.bitmapDescriptorFromDrawable
-import com.crozzers.postboxgo.utils.getIconFromPostboxType
+import com.crozzers.postboxgo.ui.components.getIconFromPostboxType
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
