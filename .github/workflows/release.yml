@@ -7,36 +7,27 @@ on:
         description: The version to publish
         type: string
         required: true
-      playstore:
-        description: Release to Play store
+      bumpVersion:
+        description: Bump the version file and create tag
         type: boolean
         default: false
-      track:
-        description: Which play store track to publish to
-        type: choice
-        default: alpha
-        options:
-          - alpha
-          - beta
-          - qa
-          - production
-      draft:
-        description: Create a draft release
+      playstore:
+        description: Release to Play store
         type: boolean
         default: false
       ghRelease:
         description: Create a github release
         type: boolean
         default: false
-      bumpVersion:
-        description: Bump the version file and create tag
+      draft:
+        description: Create a draft release
         type: boolean
         default: false
+
 
 jobs:
   bump_version:
     runs-on: ubuntu-latest
-    environment: release-env
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -127,42 +118,11 @@ jobs:
     with:
       version: ${{ inputs.bumpVersion == true && inputs.version || null }}
 
-  release_aab:
-    if: ${{ inputs.playstore }}
-    needs: [bump_version, build]
-    runs-on: ubuntu-latest
-    environment: release-env
-    steps:
-      - name: Download AAB
-        uses: actions/download-artifact@v4
-        with:
-          name: app-build
-
-      - name: Download release notes
-        uses: actions/download-artifact@v4
-        with:
-          name: release-notes
-          path: whatsnew
-
-      - name: Remove MD files
-        run: |
-          rm whatsnew/*.md
-
-      - name: Publish to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: com.crozzers.postboxgo
-          releaseFiles: ${{ github.workspace }}/PostboxGO_*.aab
-          track: ${{ inputs.track }}
-          status: ${{ inputs.draft == true && 'draft' || 'completed' }}
-          whatsNewDirectory: whatsnew/
-
   release_github:
     if: ${{ inputs.ghRelease }}
     runs-on: ubuntu-latest
     environment: release-env
-    needs: [bump_version, release_aab]
+    needs: [build]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -189,3 +149,38 @@ jobs:
           files: dist/*
           name: v${{ inputs.version }}
           tag_name: ${{ inputs.version }}
+
+  # qa == "Internal testing" -- devs only. Not much use
+#  qa:
+#    needs: [ build ]
+#    uses: ./.github/workflows/release-playstore.yml
+#    secrets: inherit
+#    with:
+#      track: qa
+#      draft: ${{ inputs.draft }}
+
+  # alpha == "Closed testing" -- testing group
+  alpha:
+    needs: [ build ]
+    uses: ./.github/workflows/release-playstore.yml
+    secrets: inherit
+    with:
+      track: alpha
+      draft: ${{ inputs.draft }}
+
+  # beta == "Open testing" -- unused as it requires production
+#  beta:
+#    needs: [ alpha ]
+#    uses: ./.github/workflows/release-playstore.yml
+#    secrets: inherit
+#    with:
+#      track: beta
+#      draft: ${{ inputs.draft }}
+
+  production:
+    needs: [ alpha ]
+    uses: ./.github/workflows/release-playstore.yml
+    secrets: inherit
+    with:
+      track: production
+      draft: ${{ inputs.draft }}

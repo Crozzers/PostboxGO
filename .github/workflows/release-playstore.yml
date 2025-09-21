@@ -1,0 +1,41 @@
+name: Release to Playstore
+on:
+  workflow_call:
+    inputs:
+      track:
+        description: The track to release to
+        type: string
+        required: true
+      draft:
+        type: boolean
+        default: false
+
+jobs:
+  release_aab:
+    runs-on: ubuntu-latest
+    environment: release-env
+    steps:
+      - name: Download AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: whatsnew
+
+      - name: Remove MD files
+        run: |
+          rm whatsnew/*.md
+
+      - name: Publish to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.crozzers.postboxgo
+          releaseFiles: ${{ github.workspace }}/PostboxGO_*.aab
+          track: ${{ inputs.track }}
+          status: ${{ inputs.draft == true && 'draft' || 'completed' }}
+          whatsNewDirectory: whatsnew/
