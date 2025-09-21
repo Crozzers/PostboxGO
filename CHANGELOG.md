@@ -1,3 +1,17 @@
+## [1.0.0-alpha.10] - 2025-09-21
+
+### Bug Fixes
+
+* contents not expanding to fill space in horizontal layouts ([0718825](https://github.com/Crozzers/PostboxGO/commit/0718825e5cf26924851539004a9952710d84d6ef))
+* navigation rail being too cramped on landscape phones ([ece609a](https://github.com/Crozzers/PostboxGO/commit/ece609acccdbdfad916b32c18b6c4040b4f76e08))
+
+
+### Features
+
+* add helper message when search query returns no results ([7c2a6a3](https://github.com/Crozzers/PostboxGO/commit/7c2a6a38614584314dda62509ce177de4f78666b))
+* add statistics page ([351d44c](https://github.com/Crozzers/PostboxGO/commit/351d44cf600a86a10902bda57ccc245371715985))
+
+
 ## [1.0.0-alpha.9] - 2025-09-14
 
 ### Features
@@ -88,3 +102,4 @@
 [1.0.0-alpha.7]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.6...1.0.0-alpha.7
 [1.0.0-alpha.8]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.7...1.0.0-alpha.8
 [1.0.0-alpha.9]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.8...1.0.0-alpha.9
+[1.0.0-alpha.10]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.10
