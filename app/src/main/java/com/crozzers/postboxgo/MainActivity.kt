@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -89,15 +90,28 @@ class MainActivity : ComponentActivity() {
                     topBar = { TopBar(navController) },
                     bottomBar = { if (!compact) BottomBar(navController) }
                 ) { innerPadding ->
-                    Row(Modifier.padding(innerPadding)) {
+                    Row {
                         if (compact) {
-                            NavRail(navController)
+                            Row(
+                                Modifier.padding(
+                                    // use top, left and right padding to make sure we don't put
+                                    // anything behind the top bar, but ignore bottom padding to
+                                    // extend into the gesture zone. Nav rail items are padded
+                                    // extra anyway
+                                    top = innerPadding.calculateTopPadding(),
+                                    start = innerPadding.calculateLeftPadding(LayoutDirection.Ltr),
+                                    end = innerPadding.calculateRightPadding(LayoutDirection.Ltr)
+                                )
+                            ) {
+                                NavRail(navController)
+                            }
                         }
                         NavHost(
                             navController = navController,
                             startDestination = Routes.ListView.route,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .padding(innerPadding)
                         ) {
                             composable(Routes.ListView.route) {
                                 ListView(
