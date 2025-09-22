@@ -39,6 +39,8 @@ fun getIconFromPostboxType(type: String?): Int {
         R.drawable.parcel
     } else if (type.contains("type c") || type.contains("c type")) {
         R.drawable.type_c
+    } else if (type.contains("m type")) {
+        R.drawable.m_type
     } else {
         R.drawable.pillar_generic
     }

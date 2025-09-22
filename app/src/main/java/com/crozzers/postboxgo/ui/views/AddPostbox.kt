@@ -714,7 +714,7 @@ fun SelectPostboxType(
         ) {
             listOf(
                 "Pillar", "K Type Pillar", "C Type Pillar", "Lamp Pedastal",
-                "Wall Box", "Wall Box C Type", "Parcel", "Bantam N Type"
+                "Wall Box", "Wall Box C Type", "Parcel", "Bantam N Type", "M Type"
             ).forEach { type ->
                 DropdownMenuItem(
                     text = {
