@@ -1,3 +1,10 @@
+## [1.0.0-alpha.12] - 2025-10-05
+
+### Bug Fixes
+
+* statistics view crashing when no postboxes registered ([dd9348c](https://github.com/Crozzers/PostboxGO/commit/dd9348c9bb494e2ed6db9acc602bc094b3267fe1))
+
+
 ## [1.0.0-alpha.11] - 2025-10-05
 
 ### Bug Fixes
@@ -117,3 +124,4 @@
 [1.0.0-alpha.9]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.8...1.0.0-alpha.9
 [1.0.0-alpha.10]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.10
 [1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.11
+[1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.12
