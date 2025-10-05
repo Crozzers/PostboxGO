@@ -1,3 +1,16 @@
+## [1.0.0-alpha.11] - 2025-10-05
+
+### Bug Fixes
+
+* navigation rail items being obscured by camera cutout in landscape mode ([8f4b3ff](https://github.com/Crozzers/PostboxGO/commit/8f4b3ff9a29187c56041b343dbd86567eb992e05))
+* no postboxes found helper text referring to button that has been moved ([814692e](https://github.com/Crozzers/PostboxGO/commit/814692ec318c6fc56989b5765ba4e9716e8e8eba))
+
+
+### Features
+
+* add m type postbox icon ([b6942bc](https://github.com/Crozzers/PostboxGO/commit/b6942bc9c1c431ea0813acf8fe527f544b754f3b))
+
+
 ## [1.0.0-alpha.10] - 2025-09-21
 
 ### Bug Fixes
@@ -103,3 +116,4 @@
 [1.0.0-alpha.8]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.7...1.0.0-alpha.8
 [1.0.0-alpha.9]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.8...1.0.0-alpha.9
 [1.0.0-alpha.10]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.10
+[1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.11

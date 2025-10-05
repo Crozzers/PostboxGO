@@ -14,8 +14,8 @@ android {
         applicationId = "com.crozzers.postboxgo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 48
-        versionName = "1.0.0-alpha.10"
+        versionCode = 49
+        versionName = "1.0.0-alpha.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
