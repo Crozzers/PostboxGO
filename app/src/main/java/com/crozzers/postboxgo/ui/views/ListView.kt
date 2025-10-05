@@ -59,7 +59,7 @@ fun ListView(
         ) {
             Text("No postboxes registered yet.", textAlign = TextAlign.Center)
             Text(
-                "Click the plus icon in the top right to register a new postbox.",
+                "Click the plus icon on the navigation bar to register a new postbox.",
                 textAlign = TextAlign.Center
             )
         }
@@ -140,7 +140,7 @@ fun ListView(
                 ) {
                     Text("No postboxes found matching your query.", textAlign = TextAlign.Center)
                     Text(
-                        "Click the plus icon in the top right to register a new postbox.",
+                        "Click the plus icon on the navigation bar to register a new postbox.",
                         textAlign = TextAlign.Center
                     )
                 }
