@@ -1,5 +1,6 @@
 package com.crozzers.postboxgo.ui.views
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.SaveFile
@@ -49,6 +52,24 @@ fun StatisticsView(saveFile: SaveFile) {
     var earliestRegisteredPostbox: Long? = null
     var inactivePostboxCount = 0
     var unverifiedPostboxCount = 0
+
+    if (saveFile.getPostboxes().isEmpty()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        )
+        {
+            Text(
+                "No statistics available because no postboxes have been registered yet.",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                "Click the plus icon on the navigation bar to register a new postbox.",
+                textAlign = TextAlign.Center
+            )
+        }
+        return
+    }
 
     // build the stats
     saveFile.getPostboxes().toSortedMap(
@@ -130,7 +151,10 @@ fun StatisticsView(saveFile: SaveFile) {
         Row {
             Text("Registered Postboxes:", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.weight(1f))
-            Text(saveFile.getPostboxes().size.toString(), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                saveFile.getPostboxes().size.toString(),
+                style = MaterialTheme.typography.headlineSmall
+            )
         }
         Row {
             Text("Inactive:")
