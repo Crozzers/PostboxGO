@@ -1,3 +1,10 @@
+## [1.0.0-alpha.13] - 2025-10-21
+
+### Features
+
+* ensure exact search matches are prioritised in list view ([3ae1875](https://github.com/Crozzers/PostboxGO/commit/3ae1875c6a7d9bf78e2dfbdc55b228ffbe8e48cf))
+
+
 ## [1.0.0-alpha.12] - 2025-10-05
 
 ### Bug Fixes
@@ -125,3 +132,4 @@
 [1.0.0-alpha.10]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.10
 [1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.11
 [1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.12
+[1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.13
