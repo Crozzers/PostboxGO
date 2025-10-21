@@ -66,6 +66,48 @@ fun ListView(
     } else {
         var searchQuery by remember { mutableStateOf("") }
 
+        val exactMatches = mutableListOf<Postbox>()
+        val fuzzyMatches = mutableListOf<Postbox>()
+
+        if (searchQuery.isEmpty()) {
+            // don't bother doing some matching algorithm if there's no search query. Just show all the postboxes
+            exactMatches.addAll(postboxes.values)
+        } else {
+            for (postbox in postboxes.values) {
+                val searchValues = mutableListOf(
+                    humanReadablePostboxName(postbox.name),
+                    postbox.id,
+                    postbox.monarch.displayName,
+                    humanReadableDate(postbox.dateRegistered)
+                )
+                if (postbox.double != null) {
+                    searchValues.add(postbox.double)
+                }
+                if (postbox.type != null) {
+                    searchValues.add(postbox.type!!)
+                }
+
+                val searchNoSpaces = searchQuery.replace(" ", "")
+                var exactMatch = false
+                var fuzzyMatch = false
+                for (value in searchValues) {
+                    var valueNoSpaces = value.replace(" ", "")
+                    if (valueNoSpaces.equals(searchNoSpaces, ignoreCase = true)) {
+                        // if we find an exact match exit immediately. This is the best match we can find
+                        exactMatches.add(postbox)
+                        exactMatch = true
+                        break
+                    }
+                    // if not an exact match, check for fuzzy but keep looking for a better match just in case
+                    fuzzyMatch = fuzzyMatch || valueNoSpaces.contains(searchNoSpaces, ignoreCase = true)
+                }
+                // only add to fuzzy match list if exact match not found
+                if (!exactMatch && fuzzyMatch) {
+                    fuzzyMatches.add(postbox)
+                }
+            }
+        }
+
         val sortOption = LocalContext.current.settings.data.map { preferences ->
             preferences[Setting.HOMEPAGE_SORT_KEY] ?: SortOption.DATE.name
         }.collectAsState(initial = SortOption.DATE.name)
@@ -74,36 +116,21 @@ fun ListView(
             preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
         }.collectAsState(initial = SortDirection.DESCENDING.name)
 
-        val filteredAndSortedPostboxes = postboxes.values.filter {
-            humanReadablePostboxName(it.name).contains(searchQuery, ignoreCase = true) ||
-                    // remove spaces for ID because going back and adding a space to your search query would be annoying
-                    it.id.replace(" ", "")
-                        .contains(searchQuery.replace(" ", ""), ignoreCase = true) ||
-                    // if it's a double then also search the double's ID
-                    (it.double != null && it.double.replace(" ", "")
-                        .contains(searchQuery.replace(" ", ""), ignoreCase = true)) ||
-                    it.type?.contains(searchQuery, ignoreCase = true) == true ||
-                    it.monarch.displayName.contains(searchQuery, ignoreCase = true) ||
-                    humanReadableDate(it.dateRegistered).contains(
-                        searchQuery,
-                        ignoreCase = true
-                    )
-        }.sortedWith(
-            compareBy {
-                when (SortOption.valueOf(sortOption.value)) {
-                    SortOption.NAME -> humanReadablePostboxName(it.name)
-                    SortOption.ID -> it.id
-                    SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
-                    SortOption.TYPE -> it.type
-                    SortOption.MONARCH -> it.monarch.displayName
-                }
+        val comparator = compareBy<Postbox> {
+            when (SortOption.valueOf(sortOption.value)) {
+                SortOption.NAME -> humanReadablePostboxName(it.name)
+                SortOption.ID -> it.id
+                SortOption.DATE -> LocalDateTime.parse(it.dateRegistered)
+                SortOption.TYPE -> it.type
+                SortOption.MONARCH -> it.monarch.displayName
             }
-        ).let {
-            if (sortDirection.value == SortDirection.DESCENDING.name) {
-                it.reversed()
-            } else {
-                it
-            }
+        }
+
+        exactMatches.sortWith(comparator)
+        fuzzyMatches.sortWith(comparator)
+        if (sortDirection.value == SortDirection.DESCENDING.name) {
+            exactMatches.reverse()
+            fuzzyMatches.reverse()
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -133,7 +160,7 @@ fun ListView(
                 )
             }
 
-            if (filteredAndSortedPostboxes.isEmpty()) {
+            if (exactMatches.isEmpty() && fuzzyMatches.isEmpty()) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -150,10 +177,13 @@ fun ListView(
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    items(filteredAndSortedPostboxes) { postbox ->
+                    // ensure that exact matches are floated to the top
+                    items(exactMatches) { postbox ->
                         PostboxCard(postbox, onItemClick)
                     }
-
+                    items(fuzzyMatches) { postbox ->
+                        PostboxCard(postbox, onItemClick)
+                    }
                 }
             }
         }
