@@ -130,6 +130,6 @@
 [1.0.0-alpha.8]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.7...1.0.0-alpha.8
 [1.0.0-alpha.9]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.8...1.0.0-alpha.9
 [1.0.0-alpha.10]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.10
-[1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.11
-[1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.12
-[1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.9...1.0.0-alpha.13
+[1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.10...1.0.0-alpha.11
+[1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.11...1.0.0-alpha.12
+[1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.12...1.0.0-alpha.13
