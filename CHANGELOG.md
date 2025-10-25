@@ -1,3 +1,10 @@
+## [1.0.0-alpha.14] - 2025-10-25
+
+### Features
+
+* check for updates on startup if app was sideloaded ([1d7ca34](https://github.com/Crozzers/PostboxGO/commit/1d7ca3411288d6ac557c018ae2b0f1a21deca353))
+
+
 ## [1.0.0-alpha.13] - 2025-10-21
 
 ### Features
@@ -133,3 +140,4 @@
 [1.0.0-alpha.11]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.10...1.0.0-alpha.11
 [1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.11...1.0.0-alpha.12
 [1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.12...1.0.0-alpha.13
+[1.0.0-alpha.14]: https://github.com/Crozzers/PostboxGO/compare/...1.0.0-alpha.14
