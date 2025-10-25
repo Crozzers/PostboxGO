@@ -22,3 +22,4 @@ google-services.json
 *.jar
 *secrets*
 app/release
+docs/images/autocapture

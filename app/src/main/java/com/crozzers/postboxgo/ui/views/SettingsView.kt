@@ -198,6 +198,21 @@ fun VersionInfo() {
         context.startActivity(
             Intent(
                 Intent.ACTION_VIEW,
+                "https://github.com/Crozzers/PostboxGO/blob/main/docs/usage.md".toUri()
+            )
+        )
+    }) {
+        Text("View usage instructions")
+        Icon(
+            painter = painterResource(id = R.drawable.open_in_new_window),
+            contentDescription = "View usage instructions in new window",
+            modifier = Modifier.padding(start = 2.dp)
+        )
+    }
+    Button(onClick = {
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
                 "https://github.com/Crozzers/PostboxGO".toUri()
             )
         )

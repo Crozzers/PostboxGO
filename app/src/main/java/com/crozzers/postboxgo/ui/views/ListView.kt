@@ -91,7 +91,7 @@ fun ListView(
                 var exactMatch = false
                 var fuzzyMatch = false
                 for (value in searchValues) {
-                    var valueNoSpaces = value.replace(" ", "")
+                    val valueNoSpaces = value.replace(" ", "")
                     if (valueNoSpaces.equals(searchNoSpaces, ignoreCase = true)) {
                         // if we find an exact match exit immediately. This is the best match we can find
                         exactMatches.add(postbox)

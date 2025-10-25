@@ -40,7 +40,7 @@ device=phone &&
     adb shell "rm -rf /storage/emulated/0/Pictures/pbg" &&
     adb shell "mkdir /storage/emulated/0/Pictures/pbg" &&
     ./gradlew -Pandroid.testInstrumentationRunnerArguments.screenshots=1 -Pandroid.testInstrumentationRunnerArguments.device=$device connectedAndroidTest &&
-    for file in $(adb shell "ls /storage/emulated/0/Pictures/pbg/*.png"); do adb pull $file docs/images/; done
+    for file in $(adb shell "ls /storage/emulated/0/Pictures/pbg/*.png"); do adb pull $file docs/images/autocapture/; done
 ```
 
 This will output the images to `docs/images`, where you can then update the README/playstore listing.

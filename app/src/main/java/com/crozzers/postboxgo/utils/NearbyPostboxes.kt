@@ -137,6 +137,14 @@ fun getNearbyPostboxes(
     }
 }
 
+fun getNearbyPostboxes(
+    context: Context,
+    location: Location,
+    callback: (p: List<DetailedPostboxInfo>) -> Unit
+) {
+    return getNearbyPostboxes(context, LatLng(location.latitude, location.longitude), callback)
+}
+
 fun posToUKPostcode(context: Context, pos: LatLng): String? {
     val geocoder = Geocoder(context, Locale.getDefault())
 
@@ -156,14 +164,6 @@ fun posToUKPostcode(context: Context, pos: LatLng): String? {
         throw IllegalArgumentException("Postcode is not in the UK: ${addresses[0].postalCode}")
     }
     return postcode
-}
-
-fun getNearbyPostboxes(
-    context: Context,
-    location: Location,
-    callback: (p: List<DetailedPostboxInfo>) -> Unit
-) {
-    return getNearbyPostboxes(context, LatLng(location.latitude, location.longitude), callback)
 }
 
 @Serializable

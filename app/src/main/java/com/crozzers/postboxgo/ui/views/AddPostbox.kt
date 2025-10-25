@@ -697,7 +697,7 @@ fun SelectPostboxType(
             value = selectedType ?: "Select a postbox type",
             onValueChange = {},
             readOnly = true,
-            label = { Text(text = "Postbox") },
+            label = { Text(text = "Postbox Type") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
