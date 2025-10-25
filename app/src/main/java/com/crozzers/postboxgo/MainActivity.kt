@@ -2,6 +2,8 @@ package com.crozzers.postboxgo
 
 import android.Manifest
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -38,6 +40,7 @@ import com.crozzers.postboxgo.ui.views.EditPostbox
 import com.crozzers.postboxgo.ui.views.ListView
 import com.crozzers.postboxgo.ui.views.SettingsView
 import com.crozzers.postboxgo.ui.views.StatisticsView
+import com.crozzers.postboxgo.utils.UpdateCheck
 import com.crozzers.postboxgo.utils.removeStaleCachedPostboxData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -77,6 +80,8 @@ class MainActivity : ComponentActivity() {
         }
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        createNotificationChannel()
 
         enableEdgeToEdge()
         setContent {
@@ -175,8 +180,22 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                UpdateCheck()
             }
         }
+    }
+
+    fun createNotificationChannel() {
+        val name = "PostboxGO App Updates"
+        val descriptionText = "Notifies if an app update is available"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel("PBG_APP_UPDATES", name, importance).apply {
+            description = descriptionText
+        }
+        // Register the channel with the system.
+        val notificationManager: NotificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 }
 

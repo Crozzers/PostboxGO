@@ -3,6 +3,7 @@ package com.crozzers.postboxgo
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -14,6 +15,8 @@ object Setting {
     val COLOUR_SCHEME = stringPreferencesKey("colour_scheme")
     val HOMEPAGE_SORT_KEY = stringPreferencesKey("homepage_sort_key")
     val HOMEPAGE_SORT_DIRECTION = stringPreferencesKey("homepage_sort_direction")
+    val CHECK_FOR_UPDATES = booleanPreferencesKey("check_for_updates")
+    val RELEASE_TRACK = stringPreferencesKey("releaseTrack")
 }
 
 /**

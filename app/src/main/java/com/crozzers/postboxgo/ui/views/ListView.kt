@@ -99,7 +99,8 @@ fun ListView(
                         break
                     }
                     // if not an exact match, check for fuzzy but keep looking for a better match just in case
-                    fuzzyMatch = fuzzyMatch || valueNoSpaces.contains(searchNoSpaces, ignoreCase = true)
+                    fuzzyMatch =
+                        fuzzyMatch || valueNoSpaces.contains(searchNoSpaces, ignoreCase = true)
                 }
                 // only add to fuzzy match list if exact match not found
                 if (!exactMatch && fuzzyMatch) {

@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -39,7 +42,9 @@ import com.crozzers.postboxgo.setSetting
 import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.components.DropdownMenu
 import com.crozzers.postboxgo.ui.theme.ColourSchemes
+import com.crozzers.postboxgo.utils.ReleaseTrack
 import com.crozzers.postboxgo.utils.clearPostboxData
+import com.crozzers.postboxgo.utils.isManuallyInstalled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
@@ -64,6 +69,14 @@ fun SettingsView(saveFile: SaveFile) {
         preferences[Setting.HOMEPAGE_SORT_DIRECTION] ?: SortDirection.DESCENDING.name
     }.collectAsState(initial = SortDirection.DESCENDING.name)
 
+    val checkForUpdates = settings.data.map { preferences ->
+        preferences[Setting.CHECK_FOR_UPDATES] ?: true
+    }.collectAsState(initial = true)
+
+    val selectedReleaseTrack = settings.data.map { preferences ->
+        preferences[Setting.RELEASE_TRACK] ?: ReleaseTrack.STABLE.name
+    }.collectAsState(initial = ReleaseTrack.STABLE.name)
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -71,16 +84,30 @@ fun SettingsView(saveFile: SaveFile) {
     ) {
         ColourSchemeDropdown(selectedColourScheme, setSetting(settings, Setting.COLOUR_SCHEME))
         Spacer(modifier = Modifier.padding(16.dp))
+        HorizontalDivider(Modifier)
+        Spacer(modifier = Modifier.padding(8.dp))
         HomepageSortOption(selectedSortOption, selectedSortDirection) { s, d ->
             setSetting(settings, Setting.HOMEPAGE_SORT_KEY)(s)
             setSetting(settings, Setting.HOMEPAGE_SORT_DIRECTION)(d)
         }
         Spacer(modifier = Modifier.padding(16.dp))
+        HorizontalDivider(Modifier)
+        Spacer(modifier = Modifier.padding(8.dp))
         SaveFileManagement(saveFile)
         Spacer(modifier = Modifier.padding(16.dp))
         ClearPBCacheButton()
+        if (isManuallyInstalled(LocalContext.current)) {
+            Spacer(modifier = Modifier.padding(16.dp))
+            HorizontalDivider(Modifier)
+            Spacer(modifier = Modifier.padding(8.dp))
+            UpdateManagement(checkForUpdates, selectedReleaseTrack) { c, s ->
+                setSetting(settings, Setting.CHECK_FOR_UPDATES)(c)
+                setSetting(settings, Setting.RELEASE_TRACK)(s)
+            }
+        }
         Spacer(modifier = Modifier.padding(16.dp))
         HorizontalDivider(Modifier)
+        Spacer(modifier = Modifier.padding(8.dp))
         Spacer(modifier = Modifier.padding(8.dp))
         VersionInfo()
     }
@@ -107,7 +134,7 @@ fun HomepageSortOption(
     onChange: (s: String, d: String) -> Unit
 ) {
     Column {
-        Text("Homepage sort options:", style = MaterialTheme.typography.titleMedium)
+        Text("Homepage sort options:", style = MaterialTheme.typography.titleLarge)
 
         Spacer(Modifier.padding(4.dp))
 
@@ -163,7 +190,7 @@ fun SaveFileManagement(saveFile: SaveFile) {
         }
     }
 
-    Text("Save file options:", style = MaterialTheme.typography.titleMedium)
+    Text("Save file options:", style = MaterialTheme.typography.titleLarge)
     Row(Modifier.fillMaxWidth()) {
         Button(onClick = {
             launcher.launch("application/json")
@@ -187,6 +214,39 @@ fun ClearPBCacheButton() {
         }
         Toast.makeText(context, "Postbox cache cleared", Toast.LENGTH_SHORT).show()
     }) { Text("Clear nearby postbox cache") }
+}
+
+@Composable
+fun UpdateManagement(
+    checkForUpdates: State<Boolean>, selectedReleaseTrack: State<String>,
+    onChange: (Boolean, String) -> Unit
+) {
+    Text("Update options:", style = MaterialTheme.typography.titleLarge)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .toggleable(value = checkForUpdates.value, onValueChange = {
+                onChange(it, selectedReleaseTrack.value)
+            }, role = Role.Checkbox)
+            .padding(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(checked = checkForUpdates.value, onCheckedChange = null)
+        Text(
+            "Check for app updates on startup",
+            modifier = Modifier.padding(start = 16.dp)
+        )
+    }
+
+    DropdownMenu(
+        "Release track",
+        ReleaseTrack.entries,
+        ReleaseTrack.valueOf(selectedReleaseTrack.value)
+    ) {
+        if (it != null) {
+            onChange(checkForUpdates.value, it.name)
+        }
+    }
 }
 
 @Composable
