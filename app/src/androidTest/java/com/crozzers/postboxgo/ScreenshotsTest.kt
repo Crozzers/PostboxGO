@@ -87,7 +87,7 @@ class ScreenshotsTest {
 
         // import save file
         val deviceDir = if (prefix == "phone") "sdk_gphone" else "Pixel Tablet"
-        waitAndClick(By.desc("Settings"))
+        waitAndClick(By.text("Settings"))
         waitAndClick(By.text("Import and overwrite"))
         if (device.findObject(By.text("base.json")) != null) {
             device.findObject(By.text("base.json")).click()
@@ -104,7 +104,7 @@ class ScreenshotsTest {
             waitAndClick(By.textContains("Download"))
             waitAndClick(By.text("base.json"))
         }
-        waitAndClick(By.desc("Home"))
+        waitAndClick(By.text("List View"))
         device.waitForIdle(2000L)
         sleep(1000)  // wait for "imported savefile" msg to go away
     }
@@ -144,9 +144,9 @@ class ScreenshotsTest {
     fun addPostboxView() {
         Assume.assumeTrue(run)
 
-        waitAndClick(By.desc("Register Postbox"))
+        waitAndClick(By.text("Register"))
         device.wait(Until.hasObject(By.text("Save Postbox")), 2000L)
-        waitAndClick(By.text("Select a postbox"))
+        waitAndClick(By.text("Select Postbox"))
         waitAndClick(By.textContains("miles away"), 10000L)
         device.waitForIdle(5000L)
         waitAndClick(By.text("Unmarked"))
@@ -160,12 +160,12 @@ class ScreenshotsTest {
     fun darkMode() {
         Assume.assumeTrue(run)
 
-        waitAndClick(By.desc("Settings"))
+        waitAndClick(By.text("Settings"))
         sleep(2000)
         waitAndClick(By.text("Standard"))
         waitAndClick(By.text("Dark"))
         sleep(500)
-        waitAndClick(By.desc("Home"))
+        waitAndClick(By.text("List View"))
         sleep(1000)
         assert(screenshot(device, "${prefix}_dark_theme.png"))
     }
