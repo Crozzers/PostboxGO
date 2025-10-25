@@ -117,6 +117,7 @@ jobs:
     secrets: inherit
     with:
       version: ${{ inputs.bumpVersion == true && inputs.version || null }}
+      bumpVersionCode: ${{ inputs.bumpVersion == false }}
 
   release_github:
     if: ${{ inputs.ghRelease }}
