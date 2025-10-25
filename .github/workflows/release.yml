@@ -178,10 +178,10 @@ jobs:
 #      track: beta
 #      draft: ${{ inputs.draft }}
 
-  production:
-    needs: [ alpha ]
-    uses: ./.github/workflows/release-playstore.yml
-    secrets: inherit
-    with:
-      track: production
-      draft: ${{ inputs.draft }}
+#  production:
+#    needs: [ alpha ]
+#    uses: ./.github/workflows/release-playstore.yml
+#    secrets: inherit
+#    with:
+#      track: production
+#      draft: ${{ inputs.draft }}
