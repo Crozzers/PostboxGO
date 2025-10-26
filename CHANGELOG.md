@@ -1,3 +1,11 @@
+## [1.0.0] - 2025-10-26
+
+### Features
+
+* add postbox age estimate ([105821d](https://github.com/Crozzers/PostboxGO/commit/105821d9ef26f365d48f0482112372c9441fa66c))
+* add scottish crown as royal cypher option ([57d3543](https://github.com/Crozzers/PostboxGO/commit/57d3543e34ddfe2f5ecea01c3724cae8fcca7e50))
+
+
 ## [1.0.0-alpha.14] - 2025-10-25
 
 ### Features
@@ -141,3 +149,4 @@
 [1.0.0-alpha.12]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.11...1.0.0-alpha.12
 [1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.12...1.0.0-alpha.13
 [1.0.0-alpha.14]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.13...1.0.0-alpha.14
+[1.0.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.14...1.0.0
