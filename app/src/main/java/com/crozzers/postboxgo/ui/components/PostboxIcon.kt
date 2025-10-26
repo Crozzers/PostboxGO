@@ -25,6 +25,8 @@ fun PostboxIcon(modifier: Modifier = Modifier, type: String?, inactive: Boolean 
 fun getIconFromPostboxType(type: String?): Int {
     val type = (type ?: "").lowercase()
 
+    // TODO penfold boxes 1866-1879, historical fluted postbox 1856-? (eg one in warwick), scottish crown,
+    // type D+E (1931), liverpool special, type B "nigerian" 1979-1980
     return if (type.contains("k type pillar")) {
         R.drawable.k_type_pillar
     } else if (type.contains("wall box c type")) {

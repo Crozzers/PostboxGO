@@ -51,6 +51,7 @@ import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.ConfirmDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.humanReadableDate
+import com.crozzers.postboxgo.utils.humanReadablePostboxAgeEstimate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 
 @Composable
@@ -176,7 +177,7 @@ fun PostboxDetails(postbox: Postbox) {
             }
             Text(text = "Type: ${postbox.type ?: "Unknown"}")
             Text(text = "Monarch: ${postbox.monarch.displayName}")
-            Text(text = "Location: ${postbox.coords.first}, ${postbox.coords.second}")
+            Text("Age estimate: ${humanReadablePostboxAgeEstimate(postbox.getAgeEstimate())}")
         }
     }
 }

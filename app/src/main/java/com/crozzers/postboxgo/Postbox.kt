@@ -1,8 +1,10 @@
 package com.crozzers.postboxgo
 
+import com.crozzers.postboxgo.ui.components.getIconFromPostboxType
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import kotlin.math.max
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -46,6 +48,67 @@ data class Postbox(
      */
     val double: String? = null
 ) {
+    /**
+     * Estimates an age for the postbox based on known information about the monarch and type
+     *
+     * @return null if unknown, or a pair of numbers indicating the earliest possible install date and the
+     *   latest possible install date. The latter can be null if that monarch/type is still being installed today
+     */
+    fun getAgeEstimate(): Pair<Int, Int?>? {
+        val icon = getIconFromPostboxType(type)
+
+        // cross off any postbox types with an easily defined lifespan
+        // these have a set start and end that fit neatly within a monarch's lifespan
+        if (icon == R.drawable.k_type_pillar) {
+            // k type pillar introduced in 1980 and withdrawn after 2001
+            return Pair(1980, 2001)
+        }
+
+        // figure out year postbox was introduced based on type
+        val typeLowerBound = when (icon) {
+            // double wide introduced in 1899: https://lbsg.org/photographs/
+            R.drawable.type_c -> 1899
+            // bantam introduced in 1999
+            R.drawable.bantam_n_type -> 1999
+            // lamp box design introduced in 1896: https://en.wikipedia.org/wiki/Lamp_box
+            R.drawable.lamp_post, R.drawable.m_type -> 1896
+            // wall boxes introduced in 1857 (scroll through the A-Z in https://lbsg.org/about-boxes/)
+            R.drawable.wall_box_b_type, R.drawable.wall_box_c_type -> 1857
+            // https://www.newarkadvertiser.co.uk/news/new-parcel-postboxes-unveiled-9079527/
+            R.drawable.parcel -> 2019
+            else -> null
+        }
+
+        val monarchBounds = when (monarch) {
+            // first standardised pillar boxes bearing Victoria's cipher appear to have started in 1866
+            // https://www.londonshoes.blog/2019/01/22/londons-historically-significant-pillar-post-boxes/
+            Monarch.VICTORIA -> Pair(1866, 1901)
+            Monarch.EDWARD7 -> Pair(1901, 1910)
+            Monarch.GEORGE5 -> Pair(1910, 1936)
+            Monarch.EDWARD8 -> Pair(1936, 1936)
+            Monarch.GEORGE6 -> Pair(1936, 1962)
+            Monarch.ELIZABETH2 -> Pair(1952, 2024)
+            // Elizabeth 2nd died in 2022 but the first Charles 3rd postbox was only unveiled in July 2024
+            // https://www.bbc.co.uk/news/articles/cjr4wxd277qo
+            Monarch.CHARLES3 -> Pair(2024, null)
+            Monarch.NONE -> null
+        }
+
+        if (typeLowerBound == null) {
+            return monarchBounds
+        } else if (monarchBounds == null) {
+            return Pair(typeLowerBound, null)
+        }
+        // now we monarch bounds are defined AND we have a type lower bound
+        if (monarchBounds.second != null && typeLowerBound > monarchBounds.second!!) {
+            // if the type bound falls outside the monarch's reign then something's wrong
+            // either I've got the type bounds wrong or the user's mis-identified the monarch
+            // default to monarch bounds because that's the number a user would be expecting
+            return monarchBounds
+        }
+        return Pair(max(typeLowerBound, monarchBounds.first), monarchBounds.second)
+    }
+
     override fun toString(): String {
         var name = name
         if (double != null) {

@@ -25,3 +25,28 @@ fun humanReadablePostboxName(name: String): String {
 fun humanReadablePostboxType(type: String): String {
     return humanReadablePostboxName(type).replace(Regex(" Postbox$"), "")
 }
+
+fun humanReadablePostboxAgeEstimate(estimate: Pair<Int, Int?>?): String {
+    if (estimate == null) {
+        return "Unknown"
+    }
+    val now = LocalDateTime.now().year
+    val lower = estimate.first
+    val higher = estimate.second
+
+    if (lower == higher) {
+        return "${xYears(now - lower)} old (${lower})"
+    }
+    if (higher == null) {
+        return "Up to ${xYears(now - lower)} old (${lower} - Present)"
+    }
+    return "${now - higher} - ${now - lower} years old (${lower} - ${higher})"
+}
+
+/**
+ * Simple function to handle pluralisation of "years".
+ * EG: "0 years", "1 year", "2 years", etc
+ */
+private fun xYears(years: Int): String {
+    return if (years == 1) "1 year" else "$years years"
+}
