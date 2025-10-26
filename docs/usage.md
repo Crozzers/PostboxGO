@@ -255,6 +255,11 @@ This view will show additional details about a postbox.
 As shown in the above screenshot, the details page starts text information about the postbox, such
 as the name and ID, and then shows a map of the postbox's location.
 
+An age estimate is shown as well, although it must be stressed that this is a rough estimate based
+on the postbox type and the reign of the monarch associated with it, with some deviations. For
+example Charles 3rd took the throne in 2022 but the
+[first postbox with his cypher](https://www.bbc.co.uk/news/articles/cjr4wxd277qo) only appeared in 2024.
+
 Underneath this are the action buttons. You can either get directions to the postbox or delete this
 entry from your save file. Note that once it is deleted there is no way to "undo", and you'll have to
 register it again.
