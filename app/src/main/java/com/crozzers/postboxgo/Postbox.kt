@@ -16,6 +16,7 @@ enum class Monarch(val displayName: String) {
     EDWARD8("Edward 8th (E VIII R)"),
     GEORGE6("George 6th (G VI R)"),
     ELIZABETH2("Elizabeth 2nd (E II R)"),
+    SCOTTISH_CROWN("Crown Of Scotland (No Royal Cypher)"),
     CHARLES3("Charles 3rd (C III R)");
 
     override fun toString(): String {
@@ -88,6 +89,8 @@ data class Postbox(
             Monarch.EDWARD8 -> Pair(1936, 1936)
             Monarch.GEORGE6 -> Pair(1936, 1962)
             Monarch.ELIZABETH2 -> Pair(1952, 2024)
+            // https://en.wikipedia.org/wiki/Pillar_Box_War
+            Monarch.SCOTTISH_CROWN -> Pair(1954, null)
             // Elizabeth 2nd died in 2022 but the first Charles 3rd postbox was only unveiled in July 2024
             // https://www.bbc.co.uk/news/articles/cjr4wxd277qo
             Monarch.CHARLES3 -> Pair(2024, null)
