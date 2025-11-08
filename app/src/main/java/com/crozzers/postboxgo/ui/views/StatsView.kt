@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.utils.humanReadableDate
+import com.crozzers.postboxgo.utils.humanReadablePostboxAgeEstimate
 import com.crozzers.postboxgo.utils.humanReadablePostboxType
 import com.crozzers.postboxgo.utils.parsePostboxType
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -31,10 +32,10 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
-import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
-import com.patrykandpatrick.vico.core.cartesian.axis.Axis
+import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.BaseAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
@@ -65,6 +66,7 @@ fun StatisticsView(saveFile: SaveFile) {
     var inactivePostboxCount = 0
     var unverifiedPostboxCount = 0
     var mostDailyRegistrations: Pair<Long, Int>? = null
+    val ageBounds = Pair(mutableListOf<Int>(), mutableListOf<Int>())
 
     if (saveFile.getPostboxes().isEmpty()) {
         Column(
@@ -87,7 +89,7 @@ fun StatisticsView(saveFile: SaveFile) {
     // build the stats
     saveFile.getPostboxes().toSortedMap(
         compareBy { LocalDateTime.parse(saveFile.getPostbox(it)!!.dateRegistered) }
-    ).forEach { id, postbox ->
+    ).forEach { (id, postbox) ->
         // calculate day registered
         val dateRegistered = LocalDateTime.parse(postbox.dateRegistered)
         val day =
@@ -105,12 +107,12 @@ fun StatisticsView(saveFile: SaveFile) {
         earliestRegisteredPostbox = if (earliestRegisteredPostbox == null) {
             dateRegistered
         } else {
-            if (earliestRegisteredPostbox!! < dateRegistered) earliestRegisteredPostbox else dateRegistered
+            if (earliestRegisteredPostbox < dateRegistered) earliestRegisteredPostbox else dateRegistered
         }
         lastRegisteredPostbox = if (lastRegisteredPostbox == null) {
             dateRegistered
         } else {
-            if (lastRegisteredPostbox!! > dateRegistered) lastRegisteredPostbox else dateRegistered
+            if (lastRegisteredPostbox > dateRegistered) lastRegisteredPostbox else dateRegistered
         }
 
         // totals tallies
@@ -145,6 +147,13 @@ fun StatisticsView(saveFile: SaveFile) {
         } else {
             postboxTypeCategoryCount[postboxTypeCategory] = 1
         }
+
+        // build age distribution
+        val ageEstimate = postbox.getAgeEstimate()
+        if (ageEstimate != null) {
+            ageBounds.first.add(ageEstimate.first)
+            ageBounds.second.add(ageEstimate.second ?: LocalDateTime.now().year)
+        }
     }
 
     // make sure the rest of the days are inserted into the over time graph
@@ -167,11 +176,36 @@ fun StatisticsView(saveFile: SaveFile) {
             .sortedWith(compareBy({ -it.value }, { it.key }))
             .associate { it.toPair() }.toMutableMap()
 
+    // process age distribution and turn it into something useful
+    val ageDistribution = mutableMapOf<Int, Int>()
+    ageBounds.first.sort()
+    ageBounds.second.sort()
+    val lowerBounds = ageBounds.first.toMutableList()
+    val upperBounds = ageBounds.second.toMutableList()
+    var count = 0
+    var averagePostboxAge = 0
+    var total = 0
+    for (year in lowerBounds[0]..upperBounds[upperBounds.size - 1]) {
+        while (lowerBounds.isNotEmpty() && year >= lowerBounds[0]) {
+            count++
+            lowerBounds.removeAt(0)
+        }
+        while (upperBounds.isNotEmpty() && year >= upperBounds[0]) {
+            count--
+            upperBounds.removeAt(0)
+        }
+        ageDistribution[year] = count
+        averagePostboxAge += year * count
+        total += count
+    }
+    averagePostboxAge /= total
+
     val registeredOverTimeModel = remember { CartesianChartModelProducer() }
     val monarchsModel = remember { CartesianChartModelProducer() }
     val monarchNameModel = remember { CartesianChartModelProducer() }
     val typesModel = remember { CartesianChartModelProducer() }
     val typeCategoriesModel = remember { CartesianChartModelProducer() }
+    val ageDistributionModel = remember { CartesianChartModelProducer() }
 
     LaunchedEffect(Unit) {
         registeredOverTimeModel.runTransaction {
@@ -186,20 +220,25 @@ fun StatisticsView(saveFile: SaveFile) {
         }
         monarchNameModel.runTransaction {
             columnSeries {
-                series((0..monarchNameCount.size - 1).toList(), monarchNameCount.values)
+                series((0..<monarchNameCount.size).toList(), monarchNameCount.values)
             }
         }
         typesModel.runTransaction {
             columnSeries {
-                series((0..postboxTypeCount.size - 1).toList(), postboxTypeCount.values)
+                series((0..<postboxTypeCount.size).toList(), postboxTypeCount.values)
             }
         }
         typeCategoriesModel.runTransaction {
             columnSeries {
                 series(
-                    (0..postboxTypeCategoryCount.size - 1).toList(),
+                    (0..<postboxTypeCategoryCount.size).toList(),
                     postboxTypeCategoryCount.values
                 )
+            }
+        }
+        ageDistributionModel.runTransaction {
+            columnSeries {
+                series(ageDistribution.keys, ageDistribution.values)
             }
         }
     }
@@ -276,6 +315,35 @@ fun StatisticsView(saveFile: SaveFile) {
             modelProducer = typesModel,
             xFormatter = getPostboxTypeFormatter(postboxTypeCount.keys.toList())
         )
+
+        Text("Age Distribution:", style = MaterialTheme.typography.headlineSmall)
+        if (ageBounds.first.isNotEmpty() && ageBounds.second.isNotEmpty()) {
+            Text(
+                "Oldest Postbox: ${
+                    humanReadablePostboxAgeEstimate(
+                        Pair(
+                            ageBounds.first.first(),
+                            ageBounds.second.first()
+                        )
+                    )
+                }"
+            )
+            Text(
+                "Newest Postbox: ${
+                    humanReadablePostboxAgeEstimate(
+                        Pair(
+                            ageBounds.first.last(),
+                            ageBounds.second.last()
+                        )
+                    )
+                }"
+            )
+        }
+        Text("Average Age: ${LocalDateTime.now().year - averagePostboxAge} years")
+        BarChart(
+            modelProducer = ageDistributionModel,
+            colSpacing = -1f
+        )
     }
 }
 
@@ -283,7 +351,8 @@ fun StatisticsView(saveFile: SaveFile) {
 fun BarChart(
     modifier: Modifier = Modifier,
     modelProducer: CartesianChartModelProducer,
-    xFormatter: CartesianValueFormatter
+    xFormatter: CartesianValueFormatter = CartesianValueFormatter.Default,
+    colSpacing: Float = 16f
 ) {
     ProvideVicoTheme(
         rememberM3VicoTheme(
@@ -297,7 +366,9 @@ fun BarChart(
         )) {
         CartesianChartHost(
             rememberCartesianChart(
-                rememberColumnCartesianLayer(),
+                rememberColumnCartesianLayer(
+                    columnCollectionSpacing = colSpacing.dp
+                ),
                 startAxis = VerticalAxis.rememberStart(
                     // make sure we don't have decimal labels on the Y axis
                     itemPlacer = remember { VerticalAxis.ItemPlacer.step({ 1.0 }) },
@@ -305,7 +376,6 @@ fun BarChart(
                 ),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     valueFormatter = xFormatter, labelRotationDegrees = -90f,
-                    itemPlacer = remember { HorizontalAxis.ItemPlacer.segmented() },
                     // use longest monarch name to set axis size
                     size = BaseAxis.Size.Text(Monarch.ELIZABETH2.displayName),
                     label = rememberAxisLabelComponent(
@@ -318,46 +388,29 @@ fun BarChart(
                 .fillMaxWidth()
                 .requiredHeight(350.dp),
             scrollState = rememberVicoScrollState(scrollEnabled = true),
+            zoomState = rememberVicoZoomState(initialZoom = Zoom.Content)
         )
     }
 }
 
-private val DateFormatter = object : CartesianValueFormatter {
-    override fun format(
-        context: CartesianMeasuringContext,
-        value: Double,
-        verticalAxisPosition: Axis.Position.Vertical?
-    ): CharSequence {
-        return LocalDateTime
-            .ofEpochSecond(value.toLong() * 60 * 60 * 24, 0, ZoneOffset.UTC)
-            .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-    }
+private val DateFormatter = CartesianValueFormatter { context, value, verticalAxisPosition ->
+    LocalDateTime
+        .ofEpochSecond(value.toLong() * 60 * 60 * 24, 0, ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
 }
 
 
-private val MonarchFormatter = object : CartesianValueFormatter {
-    override fun format(
-        context: CartesianMeasuringContext,
-        value: Double,
-        verticalAxisPosition: Axis.Position.Vertical?
-    ): CharSequence {
-        return Monarch.entries[value.toInt()].displayName
-            // replace the bracketed cypher helper to keep the label a reasonable size
-            .replace(Regex(""" \(.*\)"""), "")
-    }
+private val MonarchFormatter = CartesianValueFormatter { context, value, verticalAxisPosition ->
+    Monarch.entries[value.toInt()].displayName
+        // replace the bracketed cypher helper to keep the label a reasonable size
+        .replace(Regex(""" \(.*\)"""), "")
 }
 
 fun getPostboxTypeFormatter(typeList: List<String?>): CartesianValueFormatter {
-    return object : CartesianValueFormatter {
-        override fun format(
-            context: CartesianMeasuringContext,
-            value: Double,
-            verticalAxisPosition: Axis.Position.Vertical?
-        ): CharSequence {
-            return humanReadablePostboxType(
-                if (value.toInt() < typeList.size) typeList[value.toInt()]
-                    ?: "Unknown" else "Unknown"
-            )
-        }
+    return CartesianValueFormatter { context, value, verticalAxisPosition ->
+        humanReadablePostboxType(
+            if (value.toInt() < typeList.size) typeList[value.toInt()]
+                ?: "Unknown" else "Unknown"
+        )
     }
 }

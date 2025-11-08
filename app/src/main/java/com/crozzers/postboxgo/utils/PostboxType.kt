@@ -35,6 +35,8 @@ fun parsePostboxType(type: String?): Pair<String?, Int?> {
     } else if (type.contains("pillar")) {
         category = "Pillar"
         icon = if (type.contains("k type")) R.drawable.k_type_pillar else R.drawable.pillar_generic
+    } else if (type.contains("indoor")) {
+        category = "Indoor"
     }
 
     return Pair(category, icon)
