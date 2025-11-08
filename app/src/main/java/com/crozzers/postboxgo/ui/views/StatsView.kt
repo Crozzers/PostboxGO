@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.Monarch
 import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxType
+import com.crozzers.postboxgo.utils.parsePostboxType
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -48,10 +50,21 @@ import kotlin.math.min
 fun StatisticsView(saveFile: SaveFile) {
     val registeredOverTime = mutableMapOf<Long, Int>()
     val monarchCount = Monarch.entries.associate { Pair(it.ordinal, 0) }.toMutableMap()
+    val monarchNameCount = Monarch.entries.associate {
+        if (it == Monarch.SCOTTISH_CROWN) {
+            Pair("Unmarked", 0)
+        } else {
+            Pair(it.displayName.split(" ")[0], 0)
+        }
+    }.toMutableMap()
     var postboxTypeCount = mutableMapOf<String?, Int>()
-    var earliestRegisteredPostbox: Long? = null
+    val postboxTypeCategoryCount = mutableMapOf<String?, Int>()
+    var earliestRegisteredPostbox: LocalDateTime? = null
+    var earliestRegisteredPostboxDay: Long? = null
+    var lastRegisteredPostbox: LocalDateTime? = null
     var inactivePostboxCount = 0
     var unverifiedPostboxCount = 0
+    var mostDailyRegistrations: Pair<Long, Int>? = null
 
     if (saveFile.getPostboxes().isEmpty()) {
         Column(
@@ -76,16 +89,29 @@ fun StatisticsView(saveFile: SaveFile) {
         compareBy { LocalDateTime.parse(saveFile.getPostbox(it)!!.dateRegistered) }
     ).forEach { id, postbox ->
         // calculate day registered
+        val dateRegistered = LocalDateTime.parse(postbox.dateRegistered)
         val day =
-            LocalDateTime.parse(postbox.dateRegistered).toEpochSecond(ZoneOffset.UTC)
+            dateRegistered.toEpochSecond(ZoneOffset.UTC)
                 .div(60 * 60 * 24)
         if (registeredOverTime.containsKey(day)) {
             registeredOverTime[day] = registeredOverTime[day]!! + 1
         } else {
             registeredOverTime[day] = 1
         }
-        earliestRegisteredPostbox =
-            earliestRegisteredPostbox?.let { min(day, it) } ?: day
+        earliestRegisteredPostboxDay =
+            earliestRegisteredPostboxDay?.let { min(day, it) } ?: day
+
+        // set the earliest and latest dates for the postbox registration
+        earliestRegisteredPostbox = if (earliestRegisteredPostbox == null) {
+            dateRegistered
+        } else {
+            if (earliestRegisteredPostbox!! < dateRegistered) earliestRegisteredPostbox else dateRegistered
+        }
+        lastRegisteredPostbox = if (lastRegisteredPostbox == null) {
+            dateRegistered
+        } else {
+            if (lastRegisteredPostbox!! > dateRegistered) lastRegisteredPostbox else dateRegistered
+        }
 
         // totals tallies
         if (postbox.inactive) {
@@ -97,6 +123,12 @@ fun StatisticsView(saveFile: SaveFile) {
 
         // monarch counting
         monarchCount[postbox.monarch.ordinal] = monarchCount[postbox.monarch.ordinal]!! + 1
+        // monarch name counting
+        val monarchFirstName =
+            if (postbox.monarch == Monarch.SCOTTISH_CROWN) "Unmarked" else postbox.monarch.displayName.split(
+                " "
+            )[0]
+        monarchNameCount[monarchFirstName] = monarchNameCount[monarchFirstName]!! + 1
 
         // type counting
         if (postboxTypeCount.containsKey(postbox.type)) {
@@ -104,14 +136,28 @@ fun StatisticsView(saveFile: SaveFile) {
         } else {
             postboxTypeCount[postbox.type] = 1
         }
+
+        // type category counting
+        val postboxTypeCategory = parsePostboxType(postbox.type).first ?: "Unknown"
+        if (postboxTypeCategoryCount.containsKey(postboxTypeCategory)) {
+            postboxTypeCategoryCount[postboxTypeCategory] =
+                postboxTypeCategoryCount[postboxTypeCategory]!! + 1
+        } else {
+            postboxTypeCategoryCount[postboxTypeCategory] = 1
+        }
     }
 
     // make sure the rest of the days are inserted into the over time graph
-    if (earliestRegisteredPostbox != null) {
-        for (day in (earliestRegisteredPostbox..LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    if (earliestRegisteredPostboxDay != null) {
+        for (day in (earliestRegisteredPostboxDay..LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             .div(60 * 60 * 24))) {
             if (!registeredOverTime.containsKey(day)) {
                 registeredOverTime[day] = 0
+            } else {
+                // calculate day with most registered
+                if (mostDailyRegistrations == null || registeredOverTime[day]!! > mostDailyRegistrations.second) {
+                    mostDailyRegistrations = Pair(day * 60 * 60 * 24, registeredOverTime[day]!!)
+                }
             }
         }
     }
@@ -123,7 +169,9 @@ fun StatisticsView(saveFile: SaveFile) {
 
     val registeredOverTimeModel = remember { CartesianChartModelProducer() }
     val monarchsModel = remember { CartesianChartModelProducer() }
+    val monarchNameModel = remember { CartesianChartModelProducer() }
     val typesModel = remember { CartesianChartModelProducer() }
+    val typeCategoriesModel = remember { CartesianChartModelProducer() }
 
     LaunchedEffect(Unit) {
         registeredOverTimeModel.runTransaction {
@@ -136,9 +184,22 @@ fun StatisticsView(saveFile: SaveFile) {
                 series(monarchCount.keys, monarchCount.values)
             }
         }
+        monarchNameModel.runTransaction {
+            columnSeries {
+                series((0..monarchNameCount.size - 1).toList(), monarchNameCount.values)
+            }
+        }
         typesModel.runTransaction {
             columnSeries {
                 series((0..postboxTypeCount.size - 1).toList(), postboxTypeCount.values)
+            }
+        }
+        typeCategoriesModel.runTransaction {
+            columnSeries {
+                series(
+                    (0..postboxTypeCategoryCount.size - 1).toList(),
+                    postboxTypeCategoryCount.values
+                )
             }
         }
     }
@@ -167,16 +228,53 @@ fun StatisticsView(saveFile: SaveFile) {
             Text(unverifiedPostboxCount.toString())
         }
         Spacer(Modifier.size(16.dp))
+
+        Text("Registrations:", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            "First registration: ${
+                earliestRegisteredPostbox?.let { humanReadableDate(it) } ?: "N/A"
+            }"
+        )
+        Text(
+            "Last registration: ${
+                lastRegisteredPostbox?.let { humanReadableDate(it) } ?: "N/A"
+            }"
+        )
+        if (mostDailyRegistrations != null) {
+            Text(
+                "Most daily registrations: ${mostDailyRegistrations.second} (${
+                    LocalDateTime.ofEpochSecond(
+                        mostDailyRegistrations.first,
+                        0,
+                        ZoneOffset.UTC
+                    ).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                })"
+            )
+        }
+        Text("Over time:")
         BarChart(
             modelProducer = registeredOverTimeModel,
-            xFormatter = DateFormatter,
-            title = "Registrations Over Time"
+            xFormatter = DateFormatter
         )
-        BarChart(modelProducer = monarchsModel, xFormatter = MonarchFormatter, title = "Monarchs")
+
+        Text("Monarchs:", style = MaterialTheme.typography.headlineSmall)
+        BarChart(modelProducer = monarchsModel, xFormatter = MonarchFormatter)
+        Text("By First Name:")
+        BarChart(
+            modelProducer = monarchNameModel,
+            xFormatter = getPostboxTypeFormatter(monarchNameCount.keys.toList())
+        )
+
+        Text("Postbox Types:", style = MaterialTheme.typography.headlineSmall)
+        Text("Categories:")
+        BarChart(
+            modelProducer = typeCategoriesModel,
+            xFormatter = getPostboxTypeFormatter(postboxTypeCategoryCount.keys.toList())
+        )
+        Text("All types:")
         BarChart(
             modelProducer = typesModel,
-            xFormatter = getPostboxTypeFormatter(postboxTypeCount.keys.toList()),
-            title = "Postbox Types"
+            xFormatter = getPostboxTypeFormatter(postboxTypeCount.keys.toList())
         )
     }
 }
@@ -185,13 +283,8 @@ fun StatisticsView(saveFile: SaveFile) {
 fun BarChart(
     modifier: Modifier = Modifier,
     modelProducer: CartesianChartModelProducer,
-    xFormatter: CartesianValueFormatter,
-    title: String? = null,
+    xFormatter: CartesianValueFormatter
 ) {
-    if (title != null) {
-        Text(title, style = MaterialTheme.typography.headlineSmall)
-    }
-
     ProvideVicoTheme(
         rememberM3VicoTheme(
             columnCartesianLayerColors = MaterialTheme.colorScheme.run {
@@ -268,4 +361,3 @@ fun getPostboxTypeFormatter(typeList: List<String?>): CartesianValueFormatter {
         }
     }
 }
-

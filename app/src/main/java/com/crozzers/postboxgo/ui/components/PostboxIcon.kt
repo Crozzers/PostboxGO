@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.crozzers.postboxgo.R
+import com.crozzers.postboxgo.utils.parsePostboxType
 
 @Composable
 fun PostboxIcon(modifier: Modifier = Modifier, type: String?, inactive: Boolean = false) {
@@ -23,27 +24,5 @@ fun PostboxIcon(modifier: Modifier = Modifier, type: String?, inactive: Boolean 
 }
 
 fun getIconFromPostboxType(type: String?): Int {
-    val type = (type ?: "").lowercase()
-
-    // TODO penfold boxes 1866-1879, historical fluted postbox 1856-? (eg one in warwick),
-    // type D+E (1931), liverpool special, type B "nigerian" 1979-1980
-    return if (type.contains("k type pillar")) {
-        R.drawable.k_type_pillar
-    } else if (type.contains("wall box c type")) {
-        R.drawable.wall_box_c_type
-    } else if (type.contains("wall box")) {
-        R.drawable.wall_box_b_type
-    } else if (type.contains("lamp pedastal") || type.contains("l type")) {
-        R.drawable.lamp_post
-    } else if (type.contains("bantam n")) {
-        R.drawable.bantam_n_type
-    } else if (type.contains("parcel")) {
-        R.drawable.parcel
-    } else if (type.contains("type c") || type.contains("c type")) {
-        R.drawable.type_c
-    } else if (type.contains("m type")) {
-        R.drawable.m_type
-    } else {
-        R.drawable.pillar_generic
-    }
+    return parsePostboxType(type).second ?: R.drawable.pillar_generic
 }

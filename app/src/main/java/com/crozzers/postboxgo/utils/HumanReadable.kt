@@ -1,19 +1,26 @@
 package com.crozzers.postboxgo.utils
 
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-fun humanReadableDate(date: String): String {
-    var parsed: LocalDateTime?
-    try {
-        parsed = LocalDateTime.parse(date)
-    } catch (_: DateTimeParseException) {
-        return date
-    }
-    return parsed.format(
+fun humanReadableDate(date: LocalDateTime): String {
+    return date.format(
         DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
     )
+}
+
+fun humanReadableDate(date: String): String {
+    return try {
+        humanReadableDate(LocalDateTime.parse(date))
+    } catch (_: DateTimeParseException) {
+        date
+    }
+}
+
+fun humanReadableDate(date: Long): String {
+    return humanReadableDate(LocalDateTime.ofEpochSecond(date, 0, ZoneOffset.UTC))
 }
 
 fun humanReadablePostboxName(name: String): String {
