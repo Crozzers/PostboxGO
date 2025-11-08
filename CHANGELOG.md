@@ -1,3 +1,11 @@
+## [1.1.0] - 2025-11-08
+
+### Features
+
+* add age statistics ([d76059a](https://github.com/Crozzers/PostboxGO/commit/d76059a18aab51a4b93a8f7b4edf77b70b6b4010))
+* expand statistics with additional info ([b7406c0](https://github.com/Crozzers/PostboxGO/commit/b7406c0f2d126de61323f255ce89bc1675d6b644))
+
+
 ## [1.0.0] - 2025-10-26
 
 ### Features
@@ -150,3 +158,4 @@
 [1.0.0-alpha.13]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.12...1.0.0-alpha.13
 [1.0.0-alpha.14]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.13...1.0.0-alpha.14
 [1.0.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.14...1.0.0
+[1.1.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0...1.1.0
