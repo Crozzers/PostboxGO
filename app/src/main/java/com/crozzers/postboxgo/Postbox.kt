@@ -57,6 +57,7 @@ data class Postbox(
      */
     fun getAgeEstimate(): Pair<Int, Int?>? {
         val icon = getIconFromPostboxType(type)
+        // todo: include details from https://www.postalmuseum.org/blog/evolution-of-the-post-box/
 
         // cross off any postbox types with an easily defined lifespan
         // these have a set start and end that fit neatly within a monarch's lifespan
@@ -87,7 +88,7 @@ data class Postbox(
             Monarch.EDWARD7 -> Pair(1901, 1910)
             Monarch.GEORGE5 -> Pair(1910, 1936)
             Monarch.EDWARD8 -> Pair(1936, 1936)
-            Monarch.GEORGE6 -> Pair(1936, 1962)
+            Monarch.GEORGE6 -> Pair(1936, 1952)
             Monarch.ELIZABETH2 -> Pair(1952, 2024)
             // https://en.wikipedia.org/wiki/Pillar_Box_War
             Monarch.SCOTTISH_CROWN -> Pair(1954, null)
