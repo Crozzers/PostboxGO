@@ -263,16 +263,7 @@ fun AddNearbyPostbox(
     when (orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
             Column(modifier, verticalArrangement = Arrangement.Center) {
-                SelectNearbyPostbox(
-                    locationClient,
-                    selectedPostbox,
-                    saveFile,
-                ) { p ->
-                    callback(p, selectedMonarch)
-                }
-
                 if (selectedPostbox != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     PostboxMap(
                         selectedPostbox,
                         Modifier
@@ -280,10 +271,17 @@ fun AddNearbyPostbox(
                             .height((screenHeight * 0.35).dp),
                         locationClient = locationClient
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                SelectNearbyPostbox(
+                    locationClient,
+                    selectedPostbox,
+                    saveFile,
+                ) { p ->
+                    callback(p, selectedMonarch)
+                }
                 Spacer(modifier = Modifier.height(16.dp))
-
                 SelectMonarch(selectedMonarch) { m -> callback(selectedPostbox, m) }
             }
         }
@@ -423,6 +421,7 @@ fun AddPostboxFromMap(
                             .offset(y = ((-25).dp))
                     )
                 }
+                Spacer(Modifier.size(8.dp))
                 selectionComponent(Modifier)
             }
         }
@@ -573,6 +572,7 @@ fun AddInactivePostbox(
                             .offset(y = ((-25).dp))
                     )
                 }
+                Spacer(Modifier.size(8.dp))
                 selectionComponent(Modifier)
             }
         }

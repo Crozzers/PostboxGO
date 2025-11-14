@@ -78,16 +78,6 @@ fun EditPostbox(
     ) {
         when (orientation) {
             Configuration.ORIENTATION_PORTRAIT -> {
-                if (!postbox.verified) {
-                    Row(Modifier.fillMaxWidth()) {
-                        VerifyPostbox(locationClient, postbox) {
-                            postbox.verified = it
-                            saveFile.save()
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                PostboxDetailsBrief(postbox)
                 PostboxMap(
                     postbox,
                     Modifier
@@ -113,14 +103,6 @@ fun EditPostbox(
                         .weight(1f)
                 ) {
                     Column(Modifier.fillMaxWidth(0.5f)) {
-                        if (!postbox.verified) {
-                            VerifyPostbox(locationClient, postbox) {
-                                postbox.verified = it
-                                saveFile.save()
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                        PostboxDetailsBrief(postbox)
                         if (postbox.inactive) {
                             SelectPostboxType(selectedType) {
                                 selectedType = it
@@ -138,26 +120,25 @@ fun EditPostbox(
             }
         }
 
-        Button(
-            onClick = {
-                postbox.monarch = selectedMonarch
-                postbox.type = selectedType
-                callback(postbox)
+        Row {
+            if (!postbox.verified) {
+                VerifyPostbox(locationClient, postbox) {
+                    postbox.verified = it
+                    saveFile.save()
+                }
+                Spacer(modifier = Modifier.width(16.dp))
             }
-        ) {
-            Text("Save postbox")
+            Button(
+                onClick = {
+                    postbox.monarch = selectedMonarch
+                    postbox.type = selectedType
+                    callback(postbox)
+                }
+            ) {
+                Text("Save postbox")
+            }
         }
     }
-}
-
-
-@Composable
-fun PostboxDetailsBrief(postbox: Postbox) {
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-        Text("Registered: ${humanReadableDate(postbox.dateRegistered)}")
-        Text("ID: ${postbox.id}")
-    }
-    Spacer(modifier = Modifier.height(8.dp))
 }
 
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
