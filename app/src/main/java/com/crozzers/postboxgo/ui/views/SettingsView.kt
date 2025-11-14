@@ -33,6 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.crozzers.postboxgo.R
@@ -262,40 +267,10 @@ fun VersionInfo() {
             )
         )
     }) {
-        Text("View usage instructions")
+        Text("View app usage guide")
         Icon(
             painter = painterResource(id = R.drawable.open_in_new_window),
             contentDescription = "View usage instructions in new window",
-            modifier = Modifier.padding(start = 2.dp)
-        )
-    }
-    Button(onClick = {
-        context.startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                "https://github.com/Crozzers/PostboxGO".toUri()
-            )
-        )
-    }) {
-        Text("View source code")
-        Icon(
-            painter = painterResource(id = R.drawable.open_in_new_window),
-            contentDescription = "View source code in new window",
-            modifier = Modifier.padding(start = 2.dp)
-        )
-    }
-    Button(onClick = {
-        context.startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                "https://github.com/Crozzers/PostboxGO/blob/main/privacy-notice.md".toUri()
-            )
-        )
-    }) {
-        Text("View privacy policy")
-        Icon(
-            painter = painterResource(id = R.drawable.open_in_new_window),
-            contentDescription = "View privacy policy in new window",
             modifier = Modifier.padding(start = 2.dp)
         )
     }
@@ -331,4 +306,33 @@ fun VersionInfo() {
     }
     Spacer(modifier = Modifier.padding(8.dp))
     Text("App Version: ${packageInfo.versionName}")
+    Text(buildAnnotatedString {
+        withLink(
+            LinkAnnotation.Url(
+                "https://github.com/Crozzers/PostboxGO",
+                TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.tertiary))
+            )
+        ) {
+            append("Source code")
+        }
+        append(", ")
+        withLink(
+            LinkAnnotation.Url(
+                "https://github.com/Crozzers/PostboxGO/blob/main/docs/licensing.md",
+                TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.tertiary))
+            )
+        ) {
+            append("licensing & attributions")
+        }
+        append(" and ")
+        withLink(
+            LinkAnnotation.Url(
+                "https://github.com/Crozzers/PostboxGO/blob/main/privacy-notice.md",
+                TextLinkStyles(style = SpanStyle(color = MaterialTheme.colorScheme.tertiary))
+            )
+        ) {
+            append("privacy policy")
+        }
+        append(" are available on GitHub")
+    })
 }

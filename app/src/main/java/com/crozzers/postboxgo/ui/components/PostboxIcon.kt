@@ -19,7 +19,7 @@ fun PostboxIcon(modifier: Modifier = Modifier, type: String?, inactive: Boolean 
         modifier = modifier
             .padding(10.dp)
             .alpha(if (inactive) 0.5f else 1.0f),
-        tint = Color.Companion.Unspecified,
+        tint = Color.Unspecified,
     )
 }
 

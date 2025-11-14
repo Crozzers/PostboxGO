@@ -48,8 +48,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.DetailedPostboxInfo
@@ -665,15 +667,63 @@ fun SelectPostbox(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> Unit) {
-    DropdownMenu(
-        "Monarch",
-        Monarch.entries,
-        selectedMonarch
+    var monarchDropdownExpanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = monarchDropdownExpanded,
+        onExpandedChange = {
+            monarchDropdownExpanded = !monarchDropdownExpanded
+        },
+        modifier = Modifier.fillMaxWidth()
     ) {
-        if (it != null) {
-            selectionCallback(it)
+        OutlinedTextField(
+            value = selectedMonarch.displayName,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = "Monarch") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monarchDropdownExpanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedLabelColor = MaterialTheme.colorScheme.outline,
+            ),
+            singleLine = true
+        )
+        ExposedDropdownMenu(
+            expanded = monarchDropdownExpanded,
+            onDismissRequest = { monarchDropdownExpanded = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            Monarch.entries.forEach { monarch ->
+                DropdownMenuItem(
+                    text = {
+                        Text(monarch.displayName)
+                    },
+                    onClick = {
+                        monarchDropdownExpanded = false
+                        selectionCallback(monarch)
+                    },
+                    leadingIcon = {
+                        if (monarch.icon == null) {
+                            Box(Modifier
+                                .padding(10.dp)
+                                .size(96.dp))
+                        } else {
+                            Icon(
+                                painter = painterResource(id = monarch.icon),
+                                contentDescription = "Royal Cypher of ${monarch.displayName}",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .size(96.dp),
+                                tint = Color.Unspecified,
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 }

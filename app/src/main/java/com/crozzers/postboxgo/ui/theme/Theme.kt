@@ -35,6 +35,9 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHighest = PostboxInfoCard,
     surfaceContainerHigh = Color.DarkGray,
 
+    // links
+    tertiary = Color.Blue,
+
     // errors
     error = Color.White
 )
@@ -61,6 +64,9 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = Color.Black,
     surfaceContainerHighest = PostboxInfoCard,
     surfaceContainerHigh = Color.DarkGray,
+
+    // links
+    tertiary = Color.Cyan,
 
     // errors
     error = Color.White
