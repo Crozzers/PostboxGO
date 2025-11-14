@@ -377,7 +377,7 @@ fun BarChart(
                 bottomAxis = HorizontalAxis.rememberBottom(
                     valueFormatter = xFormatter, labelRotationDegrees = -90f,
                     // use longest monarch name to set axis size
-                    size = BaseAxis.Size.Text(Monarch.ELIZABETH2.displayName),
+                    size = BaseAxis.Size.Text(Monarch.SCOTTISH_CROWN.displayName),
                     label = rememberAxisLabelComponent(
                         lineCount = 2
                     )

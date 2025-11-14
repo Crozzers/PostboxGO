@@ -10,14 +10,14 @@ import kotlin.uuid.Uuid
 
 enum class Monarch(val displayName: String, val icon: Int?) {
     NONE("Unmarked", null),
-    VICTORIA("Victoria (VR)", R.drawable.cypher_victoria),
-    EDWARD7("Edward 7th (E VII R)", R.drawable.cypher_edward7),
-    GEORGE5("George 5th (GR)", R.drawable.cypher_george5),
-    EDWARD8("Edward 8th (E VIII R)", R.drawable.cypher_edward8),
-    GEORGE6("George 6th (G VI R)", R.drawable.cypher_george6),
-    ELIZABETH2("Elizabeth 2nd (E II R)", R.drawable.cypher_elizabeth2),
-    SCOTTISH_CROWN("Crown Of Scotland (No Royal Cypher)", R.drawable.cypher_crown_of_scotland),
-    CHARLES3("Charles 3rd (C III R)", R.drawable.cypher_charles3);
+    VICTORIA("Victoria", R.drawable.cypher_victoria),
+    EDWARD7("Edward VII", R.drawable.cypher_edward7),
+    GEORGE5("George V", R.drawable.cypher_george5),
+    EDWARD8("Edward VIII", R.drawable.cypher_edward8),
+    GEORGE6("George VI", R.drawable.cypher_george6),
+    ELIZABETH2("Elizabeth II", R.drawable.cypher_elizabeth2),
+    SCOTTISH_CROWN("Crown Of Scotland", R.drawable.cypher_crown_of_scotland),
+    CHARLES3("Charles III", R.drawable.cypher_charles3);
 
     override fun toString(): String {
         return displayName

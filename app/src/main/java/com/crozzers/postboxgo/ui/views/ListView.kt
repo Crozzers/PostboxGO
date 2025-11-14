@@ -43,6 +43,7 @@ import com.crozzers.postboxgo.settings
 import com.crozzers.postboxgo.ui.components.PostboxIcon
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
+import com.crozzers.postboxgo.utils.parseRomanNumeral
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 
@@ -78,6 +79,10 @@ fun ListView(
                     humanReadablePostboxName(postbox.name),
                     postbox.id,
                     postbox.monarch.displayName,
+                    // another monarch variant with roman numerals swapped for decimal. Easier to type
+                    postbox.monarch.displayName.replace(Regex("[IVX]+$")) {
+                        parseRomanNumeral(it.groupValues[0]).toString()
+                    },
                     humanReadableDate(postbox.dateRegistered)
                 )
                 if (postbox.double != null) {
