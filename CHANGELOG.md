@@ -1,3 +1,10 @@
+## [1.2.1] - 2025-11-14
+
+### Bug Fixes
+
+* padding around unverified postbox card in details view ([fde75e6](https://github.com/Crozzers/PostboxGO/commit/fde75e614af716ec0da08fba8a853004dbf12d9b))
+
+
 ## [1.2.0] - 2025-11-14
 
 ### Bug Fixes
@@ -173,3 +180,4 @@
 [1.0.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.14...1.0.0
 [1.1.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0...1.1.0
 [1.2.0]: https://github.com/Crozzers/PostboxGO/compare/1.1.0...1.2.0
+[1.2.1]: https://github.com/Crozzers/PostboxGO/compare/1.2.0...1.2.1
