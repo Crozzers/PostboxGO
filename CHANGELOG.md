@@ -1,3 +1,16 @@
+## [1.2.0] - 2025-11-14
+
+### Bug Fixes
+
+* incorrect end date for reign of george 6th ([9660039](https://github.com/Crozzers/PostboxGO/commit/9660039236f8a4439d0115f992f0af9f558e2745))
+
+
+### Features
+
+* add icons for the royal cyphers ([d198359](https://github.com/Crozzers/PostboxGO/commit/d198359c0ddb704da962bca9493df10d7c03a43d))
+* re-vamp postbox details view ([cb4c914](https://github.com/Crozzers/PostboxGO/commit/cb4c9144498f2107e37660d99df0f0c2c8943666))
+
+
 ## [1.1.0] - 2025-11-08
 
 ### Features
@@ -159,3 +172,4 @@
 [1.0.0-alpha.14]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.13...1.0.0-alpha.14
 [1.0.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0-alpha.14...1.0.0
 [1.1.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0...1.1.0
+[1.2.0]: https://github.com/Crozzers/PostboxGO/compare/1.1.0...1.2.0
