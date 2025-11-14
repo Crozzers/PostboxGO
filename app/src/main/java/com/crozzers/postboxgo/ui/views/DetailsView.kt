@@ -155,6 +155,7 @@ fun PostboxDetails(postbox: Postbox) {
                         )
                     )
                 }
+                Spacer(Modifier.size(8.dp))
             }
             val idString = if (postbox.double != null) {
                 var l: String?
@@ -218,8 +219,8 @@ fun DetailRow(label: String, value: String, icon: Int? = null) {
                     painter = painterResource(id = icon),
                     contentDescription = label,
                     modifier = Modifier
-                        .padding(10.dp)
-                        .size(48.dp),
+                        .padding(end=10.dp)
+                        .size(64.dp),
                     tint = Color.Unspecified,
                 )
             }
