@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = { TopBar(navController) },
+                    topBar = { TopBar(navController, (applicationContext as App).saveFile) },
                     bottomBar = { if (!compact) BottomBar(navController) }
                 ) { innerPadding ->
                     Row {

@@ -29,19 +29,29 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.window.core.layout.WindowHeightSizeClass
 import com.crozzers.postboxgo.Routes
+import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.utils.humanReadablePostboxName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavController) {
+fun TopBar(navController: NavController, saveFile: SaveFile) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val showEdit =
         navBackStackEntry?.destination?.route?.startsWith(Routes.ViewPostbox.route) == true
 
     val title = when (navBackStackEntry?.destination?.route?.split("/")[0]) {
         Routes.AddPostbox.route -> Routes.AddPostbox.displayName
-        Routes.EditPostbox.route -> Routes.EditPostbox.displayName
+        Routes.EditPostbox.route -> saveFile.getPostbox(navBackStackEntry!!.arguments?.getString("id")!!)
+            ?.let { "Edit ${humanReadablePostboxName(it.name)}" }
+            ?: Routes.EditPostbox.displayName
+
         Routes.Settings.route -> Routes.Settings.displayName
         Routes.Stats.route -> Routes.Stats.displayName
+        Routes.ViewPostbox.route ->
+            saveFile.getPostbox(navBackStackEntry!!.arguments?.getString("id")!!)
+                ?.let { humanReadablePostboxName(it.name) }
+                ?: "PostboxGO"
+
         else -> "PostboxGO"
     }
 

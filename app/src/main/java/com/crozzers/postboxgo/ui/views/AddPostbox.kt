@@ -708,9 +708,11 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
                     },
                     leadingIcon = {
                         if (monarch.icon == null) {
-                            Box(Modifier
-                                .padding(10.dp)
-                                .size(96.dp))
+                            Box(
+                                Modifier
+                                    .padding(10.dp)
+                                    .size(96.dp)
+                            )
                         } else {
                             Icon(
                                 painter = painterResource(id = monarch.icon),

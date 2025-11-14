@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.crozzers.postboxgo.Postbox
@@ -43,7 +42,6 @@ import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.humanReadableDate
-import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import com.crozzers.postboxgo.utils.isPostboxVerified
 import com.google.android.gms.location.FusedLocationProviderClient
 import kotlin.uuid.ExperimentalUuidApi
@@ -78,12 +76,6 @@ fun EditPostbox(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            humanReadablePostboxName(postbox.name), style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Left, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
         when (orientation) {
             Configuration.ORIENTATION_PORTRAIT -> {
                 if (!postbox.verified) {
