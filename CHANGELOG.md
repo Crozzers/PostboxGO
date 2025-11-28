@@ -1,3 +1,11 @@
+## [1.2.2] - 2025-11-28
+
+### Bug Fixes
+
+* app crashing in offline mode ([8839ac8](https://github.com/Crozzers/PostboxGO/commit/8839ac8095cbb589968e8bc8f90e71a8f9aed398))
+* requests to royal mail api failing ([5b6abfb](https://github.com/Crozzers/PostboxGO/commit/5b6abfb4d3ba390233daf0c990091d69bca20153))
+
+
 ## [1.2.1] - 2025-11-14
 
 ### Bug Fixes
@@ -181,3 +189,4 @@
 [1.1.0]: https://github.com/Crozzers/PostboxGO/compare/1.0.0...1.1.0
 [1.2.0]: https://github.com/Crozzers/PostboxGO/compare/1.1.0...1.2.0
 [1.2.1]: https://github.com/Crozzers/PostboxGO/compare/1.2.0...1.2.1
+[1.2.2]: https://github.com/Crozzers/PostboxGO/compare/1.2.1...1.2.2
