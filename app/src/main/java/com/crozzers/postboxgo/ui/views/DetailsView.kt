@@ -219,7 +219,7 @@ fun DetailRow(label: String, value: String, icon: Int? = null) {
                     painter = painterResource(id = icon),
                     contentDescription = label,
                     modifier = Modifier
-                        .padding(end=10.dp)
+                        .padding(end = 10.dp)
                         .size(64.dp),
                     tint = Color.Unspecified,
                 )

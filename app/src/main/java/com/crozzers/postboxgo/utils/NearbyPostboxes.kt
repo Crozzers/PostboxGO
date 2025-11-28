@@ -17,6 +17,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
@@ -34,17 +35,19 @@ private val cacheFileMutex = Mutex()
 fun getNearbyPostboxes(
     context: Context,
     location: LatLng,
-    callback: (p: List<DetailedPostboxInfo>) -> Unit
+    callback: (p: List<DetailedPostboxInfo>?) -> Unit
 ) {
     var postcode: String?
     try {
         postcode = posToUKPostcode(context, location)
     } catch (e: IllegalArgumentException) {
         Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
+        callback(null)
         return
     }
     if (postcode == null) {
         Log.e(LOG_TAG, "Failed to determine postcode")
+        callback(null)
         return
     }
 
@@ -76,13 +79,20 @@ fun getNearbyPostboxes(
             setRequestProperty("Accept", "*/*")
             setRequestProperty("Referer", "https://www.royalmail.com/services-near-you")
 
-            connect()
+            try {
+                connect()
+            } catch (e: IOException) {
+                Log.e(LOG_TAG, "failed to connect to royal mail API: ${e.message}")
+                callback(null)
+                return@launch
+            }
 
             if (responseCode != 200) {
                 Log.e(
                     LOG_TAG,
                     "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage"
                 )
+                callback(null)
                 return@launch
             }
             val doubles = mutableListOf<DetailedPostboxInfo>()
@@ -132,6 +142,8 @@ fun getNearbyPostboxes(
         if (postboxData?.isNotEmpty() == true) {
             callback(postboxData)
             cachePostboxData(context, postcode, postboxData)
+        } else {
+            callback(null)
         }
         return@launch
     }
@@ -140,7 +152,7 @@ fun getNearbyPostboxes(
 fun getNearbyPostboxes(
     context: Context,
     location: Location,
-    callback: (p: List<DetailedPostboxInfo>) -> Unit
+    callback: (p: List<DetailedPostboxInfo>?) -> Unit
 ) {
     return getNearbyPostboxes(context, LatLng(location.latitude, location.longitude), callback)
 }
@@ -148,7 +160,12 @@ fun getNearbyPostboxes(
 fun posToUKPostcode(context: Context, pos: LatLng): String? {
     val geocoder = Geocoder(context, Locale.getDefault())
 
-    val addresses = geocoder.getFromLocation(pos.latitude, pos.longitude, 1)
+    val addresses = try {
+        geocoder.getFromLocation(pos.latitude, pos.longitude, 1)
+    } catch (e: IOException) {
+        Log.e(LOG_TAG, "failed to determine postcode from $pos: ${e.message}")
+        null
+    }
     if (addresses.isNullOrEmpty()) {
         return null
     }

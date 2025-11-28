@@ -41,7 +41,6 @@ import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.utils.checkAndRequestLocation
-import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.isPostboxVerified
 import com.google.android.gms.location.FusedLocationProviderClient
 import kotlin.uuid.ExperimentalUuidApi

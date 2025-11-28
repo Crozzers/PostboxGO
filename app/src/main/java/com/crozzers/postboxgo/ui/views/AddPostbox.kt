@@ -361,19 +361,25 @@ fun AddPostboxFromMap(
     }
 
     val selectionComponent = @Composable { modifier: Modifier ->
+        var loadingMsg by remember { mutableStateOf("Loading...") }
         Column(modifier) {
             SelectPostbox(
                 postboxes,
                 selectedPostbox,
+                loadingMessage = loadingMsg,
                 onClick = { expanded ->
                     // load in our postboxes
                     val pos = cameraPosState.position.target
                     getNearbyPostboxes(context, pos) { p ->
-                        postboxes.clear()
-                        postboxes.addAll(p.filter { pb ->
-                            val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
-                            saveFile.getPostbox(id) == null
-                        })
+                        if (p == null) {
+                            loadingMsg = "Failed to get nearby postboxes"
+                        } else {
+                            postboxes.clear()
+                            postboxes.addAll(p.filter { pb ->
+                                val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
+                                saveFile.getPostbox(id) == null
+                            })
+                        }
                     }
                 },
                 selectionCallback = { p ->
@@ -621,6 +627,7 @@ fun SelectNearbyPostbox(
     selectionCallback: (p: DetailedPostboxInfo) -> Unit
 ) {
     val nearbyPostboxes = remember { mutableStateListOf<DetailedPostboxInfo>() }
+    var loadingMsg by remember { mutableStateOf("Getting location...") }
     // store here to pass to other stuff. Hacky but true
     val context = LocalContext.current
     getLocation(locationClient) { location ->
@@ -629,11 +636,15 @@ fun SelectNearbyPostbox(
                 .show()
         } else {
             getNearbyPostboxes(context, location) { postboxes ->
-                nearbyPostboxes.clear()
-                nearbyPostboxes.addAll(postboxes.filter { pb ->
-                    val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
-                    saveFile.getPostbox(id) == null
-                })
+                if (postboxes == null) {
+                    loadingMsg = "Failed to get nearby postboxes"
+                } else {
+                    nearbyPostboxes.clear()
+                    nearbyPostboxes.addAll(postboxes.filter { pb ->
+                        val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
+                        saveFile.getPostbox(id) == null
+                    })
+                }
             }
         }
     }
@@ -641,7 +652,7 @@ fun SelectNearbyPostbox(
     SelectPostbox(
         nearbyPostboxes,
         selectedPostbox,
-        "Getting location...",
+        loadingMsg,
         selectionCallback = selectionCallback
     )
 }

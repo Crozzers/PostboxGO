@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -56,7 +57,12 @@ fun checkForUpdate(
 
         with(url.openConnection() as HttpURLConnection) {
             requestMethod = "GET"
-            connect()
+            try {
+                connect()
+            } catch (e: IOException) {
+                Log.e(LOG_TAG, "failed to connect to github API: ${e.message}")
+                return@launch
+            }
 
             if (responseCode != 200) {
                 Log.e(
