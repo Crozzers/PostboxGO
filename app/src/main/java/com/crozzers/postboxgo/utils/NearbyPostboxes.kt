@@ -66,18 +66,22 @@ fun getNearbyPostboxes(
             "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
                     // for some reason setting the searchRadius at 40 yields more postboxes
                     // even when they aren't outside that radius
-                    "?postCode=${postcode}&searchRadius=40&count=10" +
-                    "&officeType=postboxes&type=2&appliedFilters=null"
+                    "?postCode=${postcode}&searchRadius=40&count=7" +
+                    "&officeType=postboxes&type=2&appliedFilters=null" +
+                    "&latitude=${location.latitude}&longitude=${location.longitude}"
         )
 
         with(url.openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             setRequestProperty(
                 "User-Agent",
-                "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0"
+                "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
             )
             setRequestProperty("Accept", "*/*")
             setRequestProperty("Referer", "https://www.royalmail.com/services-near-you")
+            setRequestProperty("Sec-Fetch-Dest", "empty")
+            setRequestProperty("Sec-Fetch-Mode", "cors")
+            setRequestProperty("Sec-Fetch-Site", "same-origin")
 
             try {
                 connect()
