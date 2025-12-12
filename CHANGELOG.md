@@ -1,3 +1,10 @@
+## [1.2.3] - 2025-12-12
+
+### Bug Fixes
+
+* m type postboxes not showing correct icon ([c2f6acd](https://github.com/Crozzers/PostboxGO/commit/c2f6acd76ee527494fb89d82be86ba047f37fe29))
+
+
 ## [1.2.2] - 2025-11-28
 
 ### Bug Fixes
@@ -190,3 +197,4 @@
 [1.2.0]: https://github.com/Crozzers/PostboxGO/compare/1.1.0...1.2.0
 [1.2.1]: https://github.com/Crozzers/PostboxGO/compare/1.2.0...1.2.1
 [1.2.2]: https://github.com/Crozzers/PostboxGO/compare/1.2.1...1.2.2
+[1.2.3]: https://github.com/Crozzers/PostboxGO/compare/1.2.2...1.2.3
