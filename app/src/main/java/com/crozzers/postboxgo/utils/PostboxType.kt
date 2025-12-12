@@ -26,7 +26,7 @@ fun parsePostboxType(type: String?): Pair<String?, Int?> {
     } else if (type.contains("bantam n")) {
         category = "Lamppost Box"
         icon = R.drawable.bantam_n_type
-    } else if (type.contains("type m")) {
+    } else if (type.contains("m type")) {
         category = "Lamppost Box"
         icon = R.drawable.m_type
     } else if (type.contains("parcel")) {
