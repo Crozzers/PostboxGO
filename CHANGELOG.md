@@ -1,3 +1,10 @@
+## [1.3.0] - 2026-01-18
+
+### Features
+
+* add new map view that shows undiscovered postboxes ([a0291d5](https://github.com/Crozzers/PostboxGO/commit/a0291d54d953a7666530d3db344defe901ffdc93))
+
+
 ## [1.2.3] - 2025-12-12
 
 ### Bug Fixes
@@ -198,3 +205,4 @@
 [1.2.1]: https://github.com/Crozzers/PostboxGO/compare/1.2.0...1.2.1
 [1.2.2]: https://github.com/Crozzers/PostboxGO/compare/1.2.1...1.2.2
 [1.2.3]: https://github.com/Crozzers/PostboxGO/compare/1.2.2...1.2.3
+[1.3.0]: https://github.com/Crozzers/PostboxGO/compare/1.2.3...1.3.0
