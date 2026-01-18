@@ -31,13 +31,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import com.crozzers.postboxgo.ui.components.BottomBar
 import com.crozzers.postboxgo.ui.components.NavRail
-import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.ui.components.TopBar
 import com.crozzers.postboxgo.ui.theme.PostboxGOTheme
 import com.crozzers.postboxgo.ui.views.AddPostbox
 import com.crozzers.postboxgo.ui.views.DetailsView
 import com.crozzers.postboxgo.ui.views.EditPostbox
 import com.crozzers.postboxgo.ui.views.ListView
+import com.crozzers.postboxgo.ui.views.MapView
 import com.crozzers.postboxgo.ui.views.SettingsView
 import com.crozzers.postboxgo.ui.views.StatisticsView
 import com.crozzers.postboxgo.utils.UpdateCheck
@@ -124,12 +124,12 @@ class MainActivity : ComponentActivity() {
                                 ) { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") }
                             }
                             composable(Routes.MapView.route) {
-                                PostboxMap(
-                                    (applicationContext as App).saveFile.getPostboxes().values,
-                                    Modifier.fillMaxSize(),
-                                    onPostboxClick = { p -> navController.navigate("${Routes.ViewPostbox.route}/${p.id}") },
-                                    locationClient = locationClient
-                                )
+                                MapView(
+                                    locationClient,
+                                    (applicationContext as App).saveFile
+                                ) { p ->
+                                    navController.navigate("${Routes.ViewPostbox.route}/${p.id}")
+                                }
                             }
                             composable(Routes.AddPostbox.route) {
                                 AddPostbox(

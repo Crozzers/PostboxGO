@@ -38,6 +38,7 @@ fun PostboxMap(
     modifier: Modifier = Modifier,
     enableGestures: Boolean = true,
     locationClient: FusedLocationProviderClient? = null,
+    zoom: Float? = null,
     onPostboxClick: ((postbox: Postbox) -> Unit)? = null
 ) {
     val boundsBuilder = LatLngBounds.builder()
@@ -69,6 +70,9 @@ fun PostboxMap(
                             150
                         )
                     )
+                    if (zoom != null) {
+                        cameraPosState.move(CameraUpdateFactory.zoomTo(zoom))
+                    }
                 }
             }
         }
@@ -117,6 +121,9 @@ fun PostboxMap(
             boundsBuilder.include(LatLng(51.52461615735085, -0.11318969493024554))
         }
         cameraPosState.move(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 150))
+        if (zoom != null) {
+            cameraPosState.move(CameraUpdateFactory.zoomTo(zoom))
+        }
     }
 }
 
