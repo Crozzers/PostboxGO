@@ -1,3 +1,10 @@
+## [1.4.0] - 2026-01-19
+
+### Features
+
+* show vague location of undiscovered postboxes and obscure postbox type ([0737434](https://github.com/Crozzers/PostboxGO/commit/0737434bd37084e698bea22181ea5edbe0f6ffc8))
+
+
 ## [1.3.0] - 2026-01-18
 
 ### Features
@@ -206,3 +213,4 @@
 [1.2.2]: https://github.com/Crozzers/PostboxGO/compare/1.2.1...1.2.2
 [1.2.3]: https://github.com/Crozzers/PostboxGO/compare/1.2.2...1.2.3
 [1.3.0]: https://github.com/Crozzers/PostboxGO/compare/1.2.3...1.3.0
+[1.4.0]: https://github.com/Crozzers/PostboxGO/compare/1.3.0...1.4.0
