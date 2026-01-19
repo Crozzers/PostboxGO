@@ -39,6 +39,7 @@ fun PostboxMap(
     enableGestures: Boolean = true,
     locationClient: FusedLocationProviderClient? = null,
     zoom: Float? = null,
+    marker: (@Composable (postbox: Postbox) -> Unit)? = null,
     onPostboxClick: ((postbox: Postbox) -> Unit)? = null
 ) {
     val boundsBuilder = LatLngBounds.builder()
@@ -104,17 +105,21 @@ fun PostboxMap(
                 postbox.coords.second.toDouble()
             )
             boundsBuilder.include(pos)
-            Marker(
-                state = MarkerState(position = pos),
-                title = postbox.name,
-                onInfoWindowClick = { onPostboxClick?.invoke(postbox) },
-                snippet = if (onPostboxClick != null) "Click for details" else null,
-                icon = bitmapDescriptorFromDrawable(
-                    LocalContext.current,
-                    getIconFromPostboxType(postbox.type)
-                ),
-                alpha = if (postbox.inactive) 0.5f else 1.0f
-            )
+            if (marker != null) {
+                marker(postbox)
+            } else {
+                Marker(
+                    state = MarkerState(position = pos),
+                    title = postbox.name,
+                    onInfoWindowClick = { onPostboxClick?.invoke(postbox) },
+                    snippet = if (onPostboxClick != null) "Click for details" else null,
+                    icon = bitmapDescriptorFromDrawable(
+                        LocalContext.current,
+                        getIconFromPostboxType(postbox.type)
+                    ),
+                    alpha = if (postbox.inactive) 0.5f else 1.0f
+                )
+            }
         }
         if (postboxes.isEmpty()) {
             // mail rail location

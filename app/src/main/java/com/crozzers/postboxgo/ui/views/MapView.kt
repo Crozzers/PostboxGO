@@ -1,6 +1,9 @@
 package com.crozzers.postboxgo.ui.views
 
 import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Column
@@ -20,7 +23,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.createBitmap
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
@@ -29,9 +35,13 @@ import com.crozzers.postboxgo.utils.checkAndRequestLocation
 import com.crozzers.postboxgo.utils.getLocation
 import com.crozzers.postboxgo.utils.getNearbyPostboxes
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GroundOverlay
+import com.google.maps.android.compose.GroundOverlayPosition
 
 @Composable
-@RequiresPermission(allOf = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION])
+@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
 fun MapView(
     locationClient: FusedLocationProviderClient,
     saveFile: SaveFile,
@@ -128,6 +138,38 @@ fun NearbyPostboxesMap(
         postboxes = nearbyPostboxes.map { Postbox.fromDetailedPostboxInfo(it) },
         modifier = Modifier.fillMaxSize(),
         locationClient = locationClient,
-        zoom = 15f
+        zoom = 15f,
+        marker = { p -> NearbyPostboxMarker(p) }
     )
+}
+
+
+@Composable
+fun NearbyPostboxMarker(postbox: Postbox) {
+    val pos = LatLng(
+        postbox.coords.first.toDouble(),
+        postbox.coords.second.toDouble()
+    )
+    GroundOverlay(
+        position = GroundOverlayPosition.create(pos, 250f),
+        image = BitmapDescriptorFactory.fromBitmap(RedCircle()),
+        transparency = 0.5f,
+        anchor = Offset(
+            pos.latitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
+                .toFloat() / 1000,
+            pos.longitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
+                .toFloat() / 1000
+        )
+    )
+}
+
+@Composable
+fun RedCircle(): Bitmap {
+    val bitmap = createBitmap(196, 196)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        this.color = MaterialTheme.colorScheme.surface.toArgb()
+    }
+    canvas.drawCircle(98f, 98f, 98f, paint)
+    return bitmap
 }
