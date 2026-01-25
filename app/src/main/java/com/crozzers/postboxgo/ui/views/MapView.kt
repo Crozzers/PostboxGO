@@ -39,6 +39,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GroundOverlay
 import com.google.maps.android.compose.GroundOverlayPosition
+import kotlin.math.atan
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sin
 
 @Composable
 @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -150,16 +155,26 @@ fun NearbyPostboxMarker(postbox: Postbox) {
         postbox.coords.first.toDouble(),
         postbox.coords.second.toDouble()
     )
+    // lon/lat is returned as 14dp, which is beyond centimetre precision, so it's essentially
+    // random, but reproducible for each individual postbox.
+    // take the last 3 digits to calculate the offset (0f - 1f)
+    var x = pos.latitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
+        .toFloat() / 1000
+    var y = pos.longitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
+        .toFloat() / 1000
+
+    // offset 0, 0 is top left, so flip the y to make maths easier
+    y = 1f - y
+    val clamped = clampPositionWithinCircleOffset(x, y)
+    x = clamped.first
+    // un-flip the y now that maths is done
+    y = 1f - clamped.second
+
     GroundOverlay(
         position = GroundOverlayPosition.create(pos, 250f),
         image = BitmapDescriptorFactory.fromBitmap(RedCircle()),
         transparency = 0.5f,
-        anchor = Offset(
-            pos.latitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
-                .toFloat() / 1000,
-            pos.longitude.toBigDecimal().toPlainString().takeLast(3).replace('.', '0')
-                .toFloat() / 1000
-        )
+        anchor = Offset(x, y)
     )
 }
 
@@ -172,4 +187,49 @@ fun RedCircle(): Bitmap {
     }
     canvas.drawCircle(98f, 98f, 98f, paint)
     return bitmap
+}
+
+/**
+ * Ensures some coordinates are within a circle inside an offset grid for a map overlay
+ */
+fun clampPositionWithinCircleOffset(x: Float, y: Float): Pair<Float, Float> {
+    // circle center coords within the offset grid
+    val cx = 0.5f
+    val cy = 0.5f
+    val radius = 0.45f  // actual rad is 0.5f but shrink a little to give us margin
+
+    val m = if (x == cx) {
+        // avoid zero div error. m is 1 if Y is above circle center, -1 if not
+        if (y < cy) {
+            -1f
+        } else {
+            1f
+        }
+    } else if (y == cy) {
+        // if y is at circle center then gradient is always 0
+        0f
+    } else {
+        // else gradient relative to circle center (0.5, 0.5)
+        (cy - y) / (cx - x)
+    }
+
+    // calculate point on circles circumference using parametric eq
+    val a = atan(m)
+    val flippedA = (a + Math.PI).toFloat()
+    val edgeX1 = cx + (radius * cos(a))
+    val edgeY1 = cy + (radius * sin(a))
+    // also calculate point on other side of circle by flipping angle 180deg (equivalent)
+    val edgeX2 = cx + (radius * cos(flippedA))
+    val edgeY2 = cy + (radius * sin(flippedA))
+
+    // ensure coords between circle borders
+    return Pair(
+        x.coerceIn(
+            min(edgeX1, edgeX2),
+            max(edgeX1, edgeX2)
+        ), y.coerceIn(
+            min(edgeY1, edgeY2),
+            max(edgeY1, edgeY2)
+        )
+    )
 }
