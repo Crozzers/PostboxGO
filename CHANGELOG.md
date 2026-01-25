@@ -1,3 +1,10 @@
+## [1.4.1] - 2026-01-25
+
+### Bug Fixes
+
+* ensure undiscovered postbox coordinatess are never outside area marker ([499e278](https://github.com/Crozzers/PostboxGO/commit/499e2781d4dd226ecb09868e30ae2871fe3abdee))
+
+
 ## [1.4.0] - 2026-01-19
 
 ### Features
@@ -214,3 +221,4 @@
 [1.2.3]: https://github.com/Crozzers/PostboxGO/compare/1.2.2...1.2.3
 [1.3.0]: https://github.com/Crozzers/PostboxGO/compare/1.2.3...1.3.0
 [1.4.0]: https://github.com/Crozzers/PostboxGO/compare/1.3.0...1.4.0
+[1.4.1]: https://github.com/Crozzers/PostboxGO/compare/1.4.0...1.4.1
