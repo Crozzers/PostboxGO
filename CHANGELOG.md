@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* ensure undiscovered postbox coordinatess are never outside area marker ([499e278](https://github.com/Crozzers/PostboxGO/commit/499e2781d4dd226ecb09868e30ae2871fe3abdee))
+* ensure undiscovered postbox coordinates are never outside area marker ([499e278](https://github.com/Crozzers/PostboxGO/commit/499e2781d4dd226ecb09868e30ae2871fe3abdee))
 
 
 ## [1.4.0] - 2026-01-19
