@@ -144,6 +144,7 @@ fun NearbyPostboxesMap(
         modifier = Modifier.fillMaxSize(),
         locationClient = locationClient,
         zoom = 15f,
+        centreOnLocation = true,
         marker = { p -> NearbyPostboxMarker(p) }
     )
 }

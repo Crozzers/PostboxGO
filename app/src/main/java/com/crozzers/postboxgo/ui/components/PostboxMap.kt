@@ -30,6 +30,9 @@ import com.google.maps.android.compose.MarkerState
  * @param modifier Modifier to apply to the map
  * @param enableGestures Whether to enable gesture interactions with the map (eg, panning)
  * @param locationClient Optional location client to use to show the user's location
+ * @param zoom Zoom level to display map at initially
+ * @param centreOnLocation Whether to center on user location, rather than overall postbox markers
+ * @param marker Custom marker for each postbox. If null, a postbox icon will be displayed
  * @param onPostboxClick Callback for when a user clicks the postbox marker info window
  */
 @Composable
@@ -39,6 +42,7 @@ fun PostboxMap(
     enableGestures: Boolean = true,
     locationClient: FusedLocationProviderClient? = null,
     zoom: Float? = null,
+    centreOnLocation: Boolean = false,
     marker: (@Composable (postbox: Postbox) -> Unit)? = null,
     onPostboxClick: ((postbox: Postbox) -> Unit)? = null
 ) {
@@ -60,14 +64,20 @@ fun PostboxMap(
         ) {
             locationClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
-                    boundsBuilder.include(
+                    var builder = boundsBuilder
+                    if (centreOnLocation) {
+                        // if centering only on location then create fresh bounds excluding
+                        // the postbox markers
+                        builder = LatLngBounds.builder()
+                    }
+                    builder.include(
                         LatLng(
                             location.latitude, location.longitude
                         )
                     )
                     cameraPosState.move(
                         CameraUpdateFactory.newLatLngBounds(
-                            boundsBuilder.build(),
+                            builder.build(),
                             150
                         )
                     )
