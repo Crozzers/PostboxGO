@@ -269,7 +269,9 @@ associated with the postbox.
 
 ### Map view
 
-The map view shows a map of all of the postboxes you have registered, letting you see just how far
+#### Registered Postboxes
+
+This view shows a map of all of the postboxes you have registered, letting you see just how far
 and wide you've travelled, or how concentrated your postbox spotting has been. 
 
 You can click on each postbox icon to see its name, and clicking on that label will take you to the
@@ -277,6 +279,18 @@ details view.
 
 <img
 height=512 src="../docs/images/autocapture/phone_map_view.png"
+alt="PostboxGO map view"
+/>
+
+#### Undiscovered Postboxes
+
+This view shows the rough location of nearby postboxes that you haven't discovered, allowing you to
+go hunting for them.
+
+The postbox will be somewhere within the highlighted area, which is a 250m wide circle.
+
+<img
+height=512 src="../docs/images/autocapture/phone_undiscovered_map_view.png"
 alt="PostboxGO map view"
 />
 

@@ -132,12 +132,23 @@ class ScreenshotsTest {
     }
 
     @Test
-    fun mapView() {
+    fun registeredMapView() {
         Assume.assumeTrue(run)
 
         waitAndClick(By.text("Map View"))
         sleep(3000)
         assert(screenshot(device, "${prefix}_map_view.png"))
+    }
+
+    @Test
+    fun undiscoveredMapView() {
+        Assume.assumeTrue(run)
+
+        waitAndClick(By.text("Map View"))
+        sleep(1000)
+        waitAndClick(By.text("Undiscovered Postboxes"))
+        sleep(5000)
+        assert(screenshot(device, "${prefix}_undiscovered_map_view.png"))
     }
 
     @Test
@@ -151,7 +162,7 @@ class ScreenshotsTest {
         device.waitForIdle(5000L)
         waitAndClick(By.text("Unmarked"))
         device.waitForIdle(2000L)
-        waitAndClick(By.textContains("George 6th"))
+        waitAndClick(By.textContains("Victoria"))
         device.waitForIdle(2000L)  // let map load
         assert(screenshot(device, "${prefix}_add_postbox_view.png"))
     }
