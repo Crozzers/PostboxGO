@@ -4,7 +4,7 @@ import com.crozzers.postboxgo.ui.components.getIconFromPostboxType
 import com.crozzers.postboxgo.utils.humanReadablePostboxName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
-import kotlin.math.max
+import java.time.format.DateTimeParseException
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -98,19 +98,31 @@ data class Postbox(
             Monarch.NONE -> null
         }
 
-        if (typeLowerBound == null) {
-            return monarchBounds
-        } else if (monarchBounds == null) {
-            return Pair(typeLowerBound, null)
+        val registeredYear = try {
+            LocalDateTime.parse(dateRegistered).year
+        } catch (_: DateTimeParseException) {
+            null
         }
-        // now we monarch bounds are defined AND we have a type lower bound
-        if (monarchBounds.second != null && typeLowerBound > monarchBounds.second!!) {
-            // if the type bound falls outside the monarch's reign then something's wrong
-            // either I've got the type bounds wrong or the user's mis-identified the monarch
-            // default to monarch bounds because that's the number a user would be expecting
-            return monarchBounds
+
+        val minYear =
+            if (monarchBounds?.second != null && typeLowerBound != null && typeLowerBound > monarchBounds.second!!) {
+                // if the type bound falls outside the monarch's reign then something's wrong
+                // either I've got the type bounds wrong or the user's mis-identified the monarch
+                // default to monarch bounds because that's the number a user would be expecting
+                monarchBounds.first
+            } else {
+                listOfNotNull(typeLowerBound, monarchBounds?.first).max()
+            }
+
+        // calculate absolute max year postbox was installed, capped by when the user discovered it because
+        // a postbox can't be installed AFTER it's registered
+        val maxYear = try {
+            listOfNotNull(monarchBounds?.second, registeredYear).min()
+        } catch (_: NoSuchElementException) {
+            null
         }
-        return Pair(max(typeLowerBound, monarchBounds.first), monarchBounds.second)
+
+        return Pair(minYear, maxYear)
     }
 
     override fun toString(): String {
