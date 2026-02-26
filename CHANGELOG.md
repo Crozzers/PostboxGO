@@ -1,3 +1,10 @@
+## [1.4.3] - 2026-02-26
+
+### Bug Fixes
+
+* too many decimals on coordinates causing royal mail api failure ([443d994](https://github.com/Crozzers/PostboxGO/commit/443d994d591458e2f51375a275f4f82aa3d22203))
+
+
 ## [1.4.2] - 2026-02-01
 
 ### Bug Fixes
@@ -231,3 +238,4 @@
 [1.4.0]: https://github.com/Crozzers/PostboxGO/compare/1.3.0...1.4.0
 [1.4.1]: https://github.com/Crozzers/PostboxGO/compare/1.4.0...1.4.1
 [1.4.2]: https://github.com/Crozzers/PostboxGO/compare/1.4.1...1.4.2
+[1.4.3]: https://github.com/Crozzers/PostboxGO/compare/1.4.2...1.4.3
