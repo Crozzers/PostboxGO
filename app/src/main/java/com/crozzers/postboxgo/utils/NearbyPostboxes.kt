@@ -41,12 +41,14 @@ fun getNearbyPostboxes(
     try {
         postcode = posToUKPostcode(context, location)
     } catch (e: IllegalArgumentException) {
-        Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Failed to determine postcode: invalid address", Toast.LENGTH_SHORT)
+            .show()
         callback(null)
         return
     }
     if (postcode == null) {
         Log.e(LOG_TAG, "Failed to determine postcode")
+        Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
         callback(null)
         return
     }
@@ -66,9 +68,11 @@ fun getNearbyPostboxes(
             "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
                     // for some reason setting the searchRadius at 40 yields more postboxes
                     // even when they aren't outside that radius
-                    "?postCode=${postcode}&searchRadius=40&count=7" +
+                    "?postCode=${postcode.replace(" ", "%20")}" +
+                    "&searchRadius=40&count=7" +
                     "&officeType=postboxes&type=2&appliedFilters=null" +
-                    "&latitude=${location.latitude}&longitude=${location.longitude}"
+                    "&latitude=${"%.7f".format(location.latitude)}" +
+                    "&longitude=${"%.7f".format(location.longitude)}"
         )
 
         with(url.openConnection() as HttpURLConnection) {
@@ -86,7 +90,12 @@ fun getNearbyPostboxes(
             try {
                 connect()
             } catch (e: IOException) {
-                Log.e(LOG_TAG, "failed to connect to royal mail API: ${e.message}")
+                Log.e(LOG_TAG, "failed to query to royal mail API: ${e.message}")
+                Toast.makeText(
+                    context,
+                    "Failed to query Royal Mail API: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 callback(null)
                 return@launch
             }
@@ -96,6 +105,11 @@ fun getNearbyPostboxes(
                     LOG_TAG,
                     "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage"
                 )
+                Toast.makeText(
+                    context,
+                    "Error fetching nearby postboxes: query status $responseCode",
+                    Toast.LENGTH_SHORT
+                ).show()
                 callback(null)
                 return@launch
             }
@@ -147,6 +161,7 @@ fun getNearbyPostboxes(
             callback(postboxData)
             cachePostboxData(context, postcode, postboxData)
         } else {
+            Toast.makeText(context, "Royal Mail API returned no results", Toast.LENGTH_SHORT).show()
             callback(null)
         }
         return@launch

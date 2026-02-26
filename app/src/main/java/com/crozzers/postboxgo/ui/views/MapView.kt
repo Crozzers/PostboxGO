@@ -121,14 +121,7 @@ fun NearbyPostboxesMap(
             } else {
                 getNearbyPostboxes(context, location) { postboxes ->
                     hasFetched.value = true
-                    if (postboxes == null) {
-                        Toast.makeText(
-                            context,
-                            "Failed to get nearby postboxes",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    } else {
+                    if (postboxes != null) {
                         nearbyPostboxes.clear()
                         nearbyPostboxes.addAll(postboxes.filter { pb ->
                             val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
