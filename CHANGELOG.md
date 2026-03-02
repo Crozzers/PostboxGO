@@ -1,3 +1,10 @@
+## [1.5.0] - 2026-03-02
+
+### Features
+
+* add dialog showing breakdown of postbox age estimate ([364bd7a](https://github.com/Crozzers/PostboxGO/commit/364bd7a2ba2c85c51b4c88cdebed5ef34d281321))
+
+
 ## [1.4.3] - 2026-02-26
 
 ### Bug Fixes
@@ -239,3 +246,4 @@
 [1.4.1]: https://github.com/Crozzers/PostboxGO/compare/1.4.0...1.4.1
 [1.4.2]: https://github.com/Crozzers/PostboxGO/compare/1.4.1...1.4.2
 [1.4.3]: https://github.com/Crozzers/PostboxGO/compare/1.4.2...1.4.3
+[1.5.0]: https://github.com/Crozzers/PostboxGO/compare/1.4.3...1.5.0
