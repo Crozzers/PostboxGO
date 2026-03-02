@@ -1,17 +1,10 @@
 package com.crozzers.postboxgo
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Environment
-import android.provider.MediaStore
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.core.graphics.writeToTestStorage
 import androidx.test.espresso.matcher.ViewMatchers.assertThat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -20,8 +13,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.hamcrest.CoreMatchers.notNullValue
 import org.junit.Assume
 import org.junit.Before
@@ -30,7 +21,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.lang.Thread.sleep
-import kotlin.properties.Delegates
 
 
 private const val PACKAGE = "com.crozzers.postboxgo"
@@ -189,8 +179,10 @@ class ScreenshotsTest {
 }
 
 fun screenshot(device: UiDevice, name: String): Boolean {
-    return device.takeScreenshot(File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "pbg/$name"
-    ))
+    return device.takeScreenshot(
+        File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            "pbg/$name"
+        )
+    )
 }

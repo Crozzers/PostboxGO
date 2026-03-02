@@ -33,7 +33,7 @@ fun humanReadablePostboxType(type: String): String {
     return humanReadablePostboxName(type).replace(Regex(" Postbox$"), "")
 }
 
-fun humanReadablePostboxAgeEstimate(estimate: Pair<Int, Int?>?): String {
+fun humanReadablePostboxAgeEstimate(estimate: Pair<Int?, Int?>?): String {
     if (estimate == null) {
         return "Unknown"
     }
@@ -41,13 +41,21 @@ fun humanReadablePostboxAgeEstimate(estimate: Pair<Int, Int?>?): String {
     val lower = estimate.first
     val higher = estimate.second
 
+    if (lower == null) {
+        return if (higher == null) {
+            "Unknown"
+        } else {
+            "At least ${xYears(now - higher)} old (Unknown - $higher)"
+        }
+    }
+
     if (lower == higher) {
-        return "${xYears(now - lower)} old (${lower})"
+        return "${xYears(now - lower)} old ($lower)"
     }
     if (higher == null) {
-        return "Up to ${xYears(now - lower)} old (${lower} - Present)"
+        return "Up to ${xYears(now - lower)} old ($lower - Present)"
     }
-    return "${now - higher} - ${now - lower} years old (${lower} - ${higher})"
+    return "${now - higher} - ${now - lower} years old ($lower - $higher)"
 }
 
 /**
@@ -56,4 +64,12 @@ fun humanReadablePostboxAgeEstimate(estimate: Pair<Int, Int?>?): String {
  */
 private fun xYears(years: Int): String {
     return if (years == 1) "1 year" else "$years years"
+}
+
+fun humanReadableYearSpan(span: Pair<Int, Int?>?): String {
+    if (span == null) {
+        return "Unknown"
+    }
+
+    return "${span.first} - ${span.second ?: "Present"}"
 }

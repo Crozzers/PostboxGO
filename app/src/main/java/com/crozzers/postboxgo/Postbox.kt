@@ -55,48 +55,12 @@ data class Postbox(
      * @return null if unknown, or a pair of numbers indicating the earliest possible install date and the
      *   latest possible install date. The latter can be null if that monarch/type is still being installed today
      */
-    fun getAgeEstimate(): Pair<Int, Int?>? {
+    fun getAgeEstimate(): Pair<Int?, Int?> {
         val icon = getIconFromPostboxType(type)
         // todo: include details from https://www.postalmuseum.org/blog/evolution-of-the-post-box/
 
-        // cross off any postbox types with an easily defined lifespan
-        // these have a set start and end that fit neatly within a monarch's lifespan
-        if (icon == R.drawable.k_type_pillar) {
-            // k type pillar introduced in 1980 and withdrawn after 2001
-            return Pair(1980, 2001)
-        }
-
-        // figure out year postbox was introduced based on type
-        val typeLowerBound = when (icon) {
-            // double wide introduced in 1899: https://lbsg.org/photographs/
-            R.drawable.type_c -> 1899
-            // bantam introduced in 1999
-            R.drawable.bantam_n_type -> 1999
-            // lamp box design introduced in 1896: https://en.wikipedia.org/wiki/Lamp_box
-            R.drawable.lamp_post, R.drawable.m_type -> 1896
-            // wall boxes introduced in 1857 (scroll through the A-Z in https://lbsg.org/about-boxes/)
-            R.drawable.wall_box_b_type, R.drawable.wall_box_c_type -> 1857
-            // https://www.newarkadvertiser.co.uk/news/new-parcel-postboxes-unveiled-9079527/
-            R.drawable.parcel -> 2019
-            else -> null
-        }
-
-        val monarchBounds = when (monarch) {
-            // first standardised pillar boxes bearing Victoria's cipher appear to have started in 1866
-            // https://www.londonshoes.blog/2019/01/22/londons-historically-significant-pillar-post-boxes/
-            Monarch.VICTORIA -> Pair(1866, 1901)
-            Monarch.EDWARD7 -> Pair(1901, 1910)
-            Monarch.GEORGE5 -> Pair(1910, 1936)
-            Monarch.EDWARD8 -> Pair(1936, 1936)
-            Monarch.GEORGE6 -> Pair(1936, 1952)
-            Monarch.ELIZABETH2 -> Pair(1952, 2024)
-            // https://en.wikipedia.org/wiki/Pillar_Box_War
-            Monarch.SCOTTISH_CROWN -> Pair(1954, null)
-            // Elizabeth 2nd died in 2022 but the first Charles 3rd postbox was only unveiled in July 2024
-            // https://www.bbc.co.uk/news/articles/cjr4wxd277qo
-            Monarch.CHARLES3 -> Pair(2024, null)
-            Monarch.NONE -> null
-        }
+        val typeBounds = postboxTypeAgeEstimate(icon)
+        val monarchBounds = postboxMonarchAgeEstimate(monarch)
 
         val registeredYear = try {
             LocalDateTime.parse(dateRegistered).year
@@ -104,23 +68,32 @@ data class Postbox(
             null
         }
 
-        val minYear =
-            if (monarchBounds?.second != null && typeLowerBound != null && typeLowerBound > monarchBounds.second!!) {
+        val minYear = try {
+            if (monarchBounds?.second != null && typeBounds?.first != null && typeBounds.first > monarchBounds.second!!) {
                 // if the type bound falls outside the monarch's reign then something's wrong
                 // either I've got the type bounds wrong or the user's mis-identified the monarch
                 // default to monarch bounds because that's the number a user would be expecting
                 monarchBounds.first
             } else {
-                listOfNotNull(typeLowerBound, monarchBounds?.first).max()
+                listOfNotNull(typeBounds?.first, monarchBounds?.first).max()
             }
-
-        // calculate absolute max year postbox was installed, capped by when the user discovered it because
-        // a postbox can't be installed AFTER it's registered
-        val maxYear = try {
-            listOfNotNull(monarchBounds?.second, registeredYear).min()
         } catch (_: NoSuchElementException) {
             null
         }
+
+        // calculate absolute max year postbox was installed, capped by when the user discovered it because
+        // a postbox can't be installed AFTER it's registered
+        val maxYear =
+            try {
+                if (monarchBounds?.first != null && typeBounds?.second != null && typeBounds.second!! < monarchBounds.first) {
+                    // if type bound outside monarch bound then default to monarch bound
+                    listOfNotNull(monarchBounds.second, registeredYear).min()
+                } else {
+                    listOfNotNull(typeBounds?.second, monarchBounds?.second, registeredYear).min()
+                }
+            } catch (_: NoSuchElementException) {
+                null
+            }
 
         return Pair(minYear, maxYear)
     }
@@ -230,5 +203,54 @@ data class DetailedPostboxInfo(
         return name +
                 " (${officeDetails.postcode} ${officeDetails.address1})" +
                 " (${locationDetails.distance} miles away)"
+    }
+}
+
+fun postboxTypeAgeEstimate(type: Int): Pair<Int, Int?>? {
+    // cross off any postbox types with an easily defined lifespan
+    // these have a set start and end that fit neatly within a monarch's lifespan
+    if (type == R.drawable.k_type_pillar) {
+        // k type pillar introduced in 1980 and withdrawn after 2001
+        return Pair(1980, 2001)
+    }
+
+    // figure out year postbox was introduced based on type
+    val typeLowerBound = when (type) {
+        // double wide introduced in 1899: https://lbsg.org/photographs/
+        R.drawable.type_c -> 1899
+        // bantam introduced in 1999
+        R.drawable.bantam_n_type -> 1999
+        // lamp box design introduced in 1896: https://en.wikipedia.org/wiki/Lamp_box
+        R.drawable.lamp_post, R.drawable.m_type -> 1896
+        // wall boxes introduced in 1857 (scroll through the A-Z in https://lbsg.org/about-boxes/)
+        R.drawable.wall_box_b_type, R.drawable.wall_box_c_type -> 1857
+        // https://www.newarkadvertiser.co.uk/news/new-parcel-postboxes-unveiled-9079527/
+        R.drawable.parcel -> 2019
+        else -> null
+    }
+
+    return if (typeLowerBound == null) {
+        null
+    } else {
+        Pair(typeLowerBound, null)
+    }
+}
+
+fun postboxMonarchAgeEstimate(monarch: Monarch): Pair<Int, Int?>? {
+    return when (monarch) {
+        // first standardised pillar boxes bearing Victoria's cipher appear to have started in 1866
+        // https://www.londonshoes.blog/2019/01/22/londons-historically-significant-pillar-post-boxes/
+        Monarch.VICTORIA -> Pair(1866, 1901)
+        Monarch.EDWARD7 -> Pair(1901, 1910)
+        Monarch.GEORGE5 -> Pair(1910, 1936)
+        Monarch.EDWARD8 -> Pair(1936, 1936)
+        Monarch.GEORGE6 -> Pair(1936, 1952)
+        Monarch.ELIZABETH2 -> Pair(1952, 2024)
+        // https://en.wikipedia.org/wiki/Pillar_Box_War
+        Monarch.SCOTTISH_CROWN -> Pair(1954, null)
+        // Elizabeth 2nd died in 2022 but the first Charles 3rd postbox was only unveiled in July 2024
+        // https://www.bbc.co.uk/news/articles/cjr4wxd277qo
+        Monarch.CHARLES3 -> Pair(2024, null)
+        Monarch.NONE -> null
     }
 }

@@ -22,12 +22,14 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -55,10 +57,17 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
+import com.crozzers.postboxgo.postboxMonarchAgeEstimate
+import com.crozzers.postboxgo.postboxTypeAgeEstimate
 import com.crozzers.postboxgo.ui.components.ConfirmDialog
+import com.crozzers.postboxgo.ui.components.InfoDialog
 import com.crozzers.postboxgo.ui.components.PostboxMap
+import com.crozzers.postboxgo.ui.components.getIconFromPostboxType
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxAgeEstimate
+import com.crozzers.postboxgo.utils.humanReadableYearSpan
+import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 
 @Composable
 fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit) {
@@ -125,6 +134,7 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 
 @Composable
 fun PostboxDetails(postbox: Postbox) {
+    val showDialog = remember { mutableStateOf(false) }
     Row {
         Column {
             if (!postbox.verified) {
@@ -174,14 +184,56 @@ fun PostboxDetails(postbox: Postbox) {
             DetailRow("ID", idString)
             DetailRow("Registered", humanReadableDate(postbox.dateRegistered))
             DetailRow("Type", postbox.type ?: "Unknown")
-            DetailRow("Age Estimate", humanReadablePostboxAgeEstimate(postbox.getAgeEstimate()))
+            DetailRow("Age Estimate", humanReadablePostboxAgeEstimate(postbox.getAgeEstimate())) {
+                IconButton(
+                    onClick = {
+                        showDialog.value = !showDialog.value
+                    },
+                    modifier = Modifier
+                        .weight(0.1f)
+                        .size(24.dp)
+                ) {
+                    Icon(Icons.Filled.Info, contentDescription = "Estimate Breakdown")
+                }
+            }
             DetailRow("Monarch", postbox.monarch.displayName, postbox.monarch.icon)
+        }
+    }
+
+    if (showDialog.value) {
+        InfoDialog(
+            title = "Age Estimate Breakdown",
+            dismissButtonText = null,
+            body = (
+                    "Postbox type: " + postbox.type +
+                            "\nService period: " + humanReadableYearSpan(
+                        postboxTypeAgeEstimate(
+                            getIconFromPostboxType(postbox.type)
+                        )
+                    ) +
+                            "\n\nMonarch: " + postbox.monarch +
+                            "\nReign: " + humanReadableYearSpan(
+                        postboxMonarchAgeEstimate(postbox.monarch)
+                    ) +
+                            "\n\nYear registered: " + try {
+                        LocalDateTime.parse(postbox.dateRegistered).year
+                    } catch (_: DateTimeParseException) {
+                        "Unknown"
+                    }
+                    )
+        ) {
+            showDialog.value = false
         }
     }
 }
 
 @Composable
-fun DetailRow(label: String, value: String, icon: Int? = null) {
+fun DetailRow(
+    label: String,
+    value: String,
+    icon: Int? = null,
+    extra: (@Composable () -> Unit)? = null
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -224,7 +276,16 @@ fun DetailRow(label: String, value: String, icon: Int? = null) {
                     tint = Color.Unspecified,
                 )
             }
-            Text(value, style = MaterialTheme.typography.bodyLarge)
+            Row {
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(0.85f)
+                )
+                if (extra != null) {
+                    extra()
+                }
+            }
         }
     }
 }
@@ -286,4 +347,3 @@ fun ActionButtons(
         }
     }
 }
-

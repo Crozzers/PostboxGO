@@ -150,8 +150,8 @@ fun StatisticsView(saveFile: SaveFile) {
 
         // build age distribution
         val ageEstimate = postbox.getAgeEstimate()
-        if (ageEstimate != null) {
-            ageBounds.first.add(ageEstimate.first)
+        if (ageEstimate.first != null) {
+            ageBounds.first.add(ageEstimate.first!!)
             ageBounds.second.add(ageEstimate.second ?: LocalDateTime.now().year)
         }
     }
