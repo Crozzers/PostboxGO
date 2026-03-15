@@ -20,7 +20,7 @@ fun parsePostboxType(type: String?): Pair<String?, Int?> {
     } else if (type.contains("type c") || type.contains("c type")) {
         category = "Double"
         icon = R.drawable.type_c
-    } else if (type.contains("lamp pedastal") || type.contains("l type")) {
+    } else if (type.contains(Regex("lamp (pedastal|box)")) || type.contains("l type")) {
         category = "Lamppost Box"
         icon = R.drawable.lamp_post
     } else if (type.contains("bantam n")) {
