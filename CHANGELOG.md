@@ -1,3 +1,10 @@
+## [1.5.1] - 2026-03-15
+
+### Bug Fixes
+
+* lamp box postboxes getting wrong icon ([de2938e](https://github.com/Crozzers/PostboxGO/commit/de2938e688fd447cc8e3292e0954a5dd24e7f0cb))
+
+
 ## [1.5.0] - 2026-03-02
 
 ### Features
@@ -247,3 +254,4 @@
 [1.4.2]: https://github.com/Crozzers/PostboxGO/compare/1.4.1...1.4.2
 [1.4.3]: https://github.com/Crozzers/PostboxGO/compare/1.4.2...1.4.3
 [1.5.0]: https://github.com/Crozzers/PostboxGO/compare/1.4.3...1.5.0
+[1.5.1]: https://github.com/Crozzers/PostboxGO/compare/1.5.0...1.5.1
