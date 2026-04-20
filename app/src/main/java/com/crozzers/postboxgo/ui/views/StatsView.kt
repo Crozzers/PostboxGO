@@ -30,6 +30,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelCompone
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
@@ -42,6 +43,7 @@ import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -49,25 +51,6 @@ import kotlin.math.min
 
 @Composable
 fun StatisticsView(saveFile: SaveFile) {
-    val registeredOverTime = mutableMapOf<Long, Int>()
-    val monarchCount = Monarch.entries.associate { Pair(it.ordinal, 0) }.toMutableMap()
-    val monarchNameCount = Monarch.entries.associate {
-        if (it == Monarch.SCOTTISH_CROWN) {
-            Pair("Unmarked", 0)
-        } else {
-            Pair(it.displayName.split(" ")[0], 0)
-        }
-    }.toMutableMap()
-    var postboxTypeCount = mutableMapOf<String?, Int>()
-    val postboxTypeCategoryCount = mutableMapOf<String?, Int>()
-    var earliestRegisteredPostbox: LocalDateTime? = null
-    var earliestRegisteredPostboxDay: Long? = null
-    var lastRegisteredPostbox: LocalDateTime? = null
-    var inactivePostboxCount = 0
-    var unverifiedPostboxCount = 0
-    var mostDailyRegistrations: Pair<Long, Int>? = null
-    val ageBounds = Pair(mutableListOf<Int>(), mutableListOf<Int>())
-
     if (saveFile.getPostboxes().isEmpty()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -86,6 +69,25 @@ fun StatisticsView(saveFile: SaveFile) {
         return
     }
 
+    var dailyRegistrations = mutableMapOf<Long, Int>()
+    val monarchCount = Monarch.entries.associate { Pair(it.ordinal, 0) }.toMutableMap()
+    val monarchNameCount = Monarch.entries.associate {
+        if (it == Monarch.SCOTTISH_CROWN) {
+            Pair("Unmarked", 0)
+        } else {
+            Pair(it.displayName.split(" ")[0], 0)
+        }
+    }.toMutableMap()
+    var postboxTypeCount = mutableMapOf<String?, Int>()
+    var postboxTypeCategoryCount = mutableMapOf<String?, Int>()
+    var earliestRegisteredPostbox: LocalDateTime? = null
+    var earliestRegisteredPostboxDay: Long? = null
+    var lastRegisteredPostbox: LocalDateTime? = null
+    var inactivePostboxCount = 0
+    var unverifiedPostboxCount = 0
+    var mostDailyRegistrations: Pair<Long, Int>? = null
+    val ageBounds = Pair(mutableListOf<Int>(), mutableListOf<Int>())
+
     // build the stats
     saveFile.getPostboxes().toSortedMap(
         compareBy { LocalDateTime.parse(saveFile.getPostbox(it)!!.dateRegistered) }
@@ -95,10 +97,10 @@ fun StatisticsView(saveFile: SaveFile) {
         val day =
             dateRegistered.toEpochSecond(ZoneOffset.UTC)
                 .div(60 * 60 * 24)
-        if (registeredOverTime.containsKey(day)) {
-            registeredOverTime[day] = registeredOverTime[day]!! + 1
+        if (dailyRegistrations.containsKey(day)) {
+            dailyRegistrations[day] = dailyRegistrations[day]!! + 1
         } else {
-            registeredOverTime[day] = 1
+            dailyRegistrations[day] = 1
         }
         earliestRegisteredPostboxDay =
             earliestRegisteredPostboxDay?.let { min(day, it) } ?: day
@@ -160,20 +162,26 @@ fun StatisticsView(saveFile: SaveFile) {
     if (earliestRegisteredPostboxDay != null) {
         for (day in (earliestRegisteredPostboxDay..LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             .div(60 * 60 * 24))) {
-            if (!registeredOverTime.containsKey(day)) {
-                registeredOverTime[day] = 0
+            if (!dailyRegistrations.containsKey(day)) {
+                dailyRegistrations[day] = 0
             } else {
                 // calculate day with most registered
-                if (mostDailyRegistrations == null || registeredOverTime[day]!! > mostDailyRegistrations.second) {
-                    mostDailyRegistrations = Pair(day * 60 * 60 * 24, registeredOverTime[day]!!)
+                if (mostDailyRegistrations == null || dailyRegistrations[day]!! > mostDailyRegistrations.second) {
+                    mostDailyRegistrations = Pair(day * 60 * 60 * 24, dailyRegistrations[day]!!)
                 }
             }
         }
     }
+    // sort registrations by date
+    dailyRegistrations =
+        dailyRegistrations.entries.sortedBy { it.key }.associate { it.toPair() }.toMutableMap()
     // ensure our postbox types are sorted most to least common for easier reading
     postboxTypeCount =
         postboxTypeCount.entries
             .sortedWith(compareBy({ -it.value }, { it.key }))
+            .associate { it.toPair() }.toMutableMap()
+    postboxTypeCategoryCount =
+        postboxTypeCategoryCount.entries.sortedWith(compareBy({ -it.value }, { it.key }))
             .associate { it.toPair() }.toMutableMap()
 
     // process age distribution and turn it into something useful
@@ -200,7 +208,8 @@ fun StatisticsView(saveFile: SaveFile) {
     }
     averagePostboxAge /= total
 
-    val registeredOverTimeModel = remember { CartesianChartModelProducer() }
+    val dailyRegistrationsModel = remember { CartesianChartModelProducer() }
+    val cumulativeRegistrationsModel = remember { CartesianChartModelProducer() }
     val monarchsModel = remember { CartesianChartModelProducer() }
     val monarchNameModel = remember { CartesianChartModelProducer() }
     val typesModel = remember { CartesianChartModelProducer() }
@@ -208,9 +217,22 @@ fun StatisticsView(saveFile: SaveFile) {
     val ageDistributionModel = remember { CartesianChartModelProducer() }
 
     LaunchedEffect(Unit) {
-        registeredOverTimeModel.runTransaction {
+        dailyRegistrationsModel.runTransaction {
             columnSeries {
-                series(registeredOverTime.keys, registeredOverTime.values)
+                series(dailyRegistrations.keys, dailyRegistrations.values)
+            }
+        }
+        cumulativeRegistrationsModel.runTransaction {
+            lineSeries {
+                var cumulativeTotal = 0
+                series(
+                    // add the day before and set to 0 so the line starts at 0, 0
+                    setOf(dailyRegistrations.keys.first() - 1) + dailyRegistrations.keys,
+                    listOf(0) + dailyRegistrations.values.map {
+                        cumulativeTotal += it
+                        cumulativeTotal
+                    }
+                )
             }
         }
         monarchsModel.runTransaction {
@@ -290,9 +312,11 @@ fun StatisticsView(saveFile: SaveFile) {
                 })"
             )
         }
-        Text("Over time:")
+        Text("Total registrations over time:")
+        LineChart(modelProducer = cumulativeRegistrationsModel, xFormatter = DateFormatter)
+        Text("Daily registrations over time:")
         BarChart(
-            modelProducer = registeredOverTimeModel,
+            modelProducer = dailyRegistrationsModel,
             xFormatter = DateFormatter
         )
 
@@ -369,6 +393,49 @@ fun BarChart(
                 rememberColumnCartesianLayer(
                     columnCollectionSpacing = colSpacing.dp
                 ),
+                startAxis = VerticalAxis.rememberStart(
+                    // make sure we don't have decimal labels on the Y axis
+                    itemPlacer = remember { VerticalAxis.ItemPlacer.step({ 1.0 }) },
+                    label = rememberAxisLabelComponent()
+                ),
+                bottomAxis = HorizontalAxis.rememberBottom(
+                    valueFormatter = xFormatter, labelRotationDegrees = -90f,
+                    // use longest monarch name to set axis size
+                    size = BaseAxis.Size.Text(Monarch.SCOTTISH_CROWN.displayName),
+                    label = rememberAxisLabelComponent(
+                        lineCount = 2
+                    )
+                )
+            ),
+            modelProducer,
+            modifier = modifier
+                .fillMaxWidth()
+                .requiredHeight(350.dp),
+            scrollState = rememberVicoScrollState(scrollEnabled = true),
+            zoomState = rememberVicoZoomState(initialZoom = Zoom.Content)
+        )
+    }
+}
+
+@Composable
+fun LineChart(
+    modifier: Modifier = Modifier,
+    modelProducer: CartesianChartModelProducer,
+    xFormatter: CartesianValueFormatter = CartesianValueFormatter.Default,
+) {
+    ProvideVicoTheme(
+        rememberM3VicoTheme(
+            columnCartesianLayerColors = MaterialTheme.colorScheme.run {
+                listOf(
+                    onBackground,
+                    secondary,
+                    tertiary
+                )
+            }
+        )) {
+        CartesianChartHost(
+            rememberCartesianChart(
+                rememberLineCartesianLayer(),
                 startAxis = VerticalAxis.rememberStart(
                     // make sure we don't have decimal labels on the Y axis
                     itemPlacer = remember { VerticalAxis.ItemPlacer.step({ 1.0 }) },
