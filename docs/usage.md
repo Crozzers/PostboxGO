@@ -56,6 +56,8 @@ For the monarch, you'll be given a list of options. Look on the front of the pos
 royal cipher. It will usually spell out the monarch's initials (eg: VR for Queen Victoria)
 and may include a number for clarification (eg: E II R for Queen Elizabeth 2nd).
 
+The app also includes icons in the monarch dropdown menu to make identifying the monarch easier. 
+
 The [letter box study group](https://lbsg.org/about-boxes/) has some really great resources
 for recognising the different postbox types and ciphers.
 
@@ -63,6 +65,11 @@ Don't worry if you don't know exactly what the cipher is on the first go, you ca
 back and edit it later.
 
 #### Step 4
+
+At this point you can also override the postbox type. Usually this is not needed, as the type is
+automatically detected from Royal Mail's API, but sometimes the Royal Mail data is incorrect.
+
+#### Step 5
 
 Click save and congratulations! You've registered your first postbox
 
@@ -202,21 +209,16 @@ to verify the postbox after registration (see [postbox verification](#verificati
 />
 <img
     height="512" src="images/add_inactive_2.png"
-    alt="Screenshot of the registration page for inactive postboxes after repositioning the map"
-    style="float: left; margin-left:5px"
-/>
-<img
-    height="512" src="images/add_inactive_3.png"
     alt="Screenshot of the postbox type selection dropdown"
     style="float: left; margin-left:5px"
 />
 <img
-    height="512" src="images/add_inactive_4.png"
+    height="512" src="images/add_inactive_3.png"
     alt="Screenshot of the registration page for inactive postboxes with all options filled in"
     style="float: left; margin-left:5px"
 />
 <img
-    height="512" src="images/add_inactive_5.png"
+    height="512" src="images/add_inactive_4.png"
     alt="Screenshot of the details view for an inactive postbox"
     style="float: left; margin-left:5px"
 />

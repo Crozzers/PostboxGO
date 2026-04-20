@@ -78,6 +78,11 @@ class ScreenshotsTest {
         // import save file
         val deviceDir = if (prefix == "phone") "sdk_gphone" else "Pixel Tablet"
         waitAndClick(By.text("Settings"))
+        // do theme
+        if (device.findObject(By.text("Dark")) != null) {
+            waitAndClick(By.text("Dark"))
+            waitAndClick(By.text("Standard"))
+        }
         waitAndClick(By.text("Import and overwrite"))
         if (device.findObject(By.text("base.json")) != null) {
             device.findObject(By.text("base.json")).click()
@@ -98,6 +103,7 @@ class ScreenshotsTest {
         device.waitForIdle(2000L)
         sleep(1000)  // wait for "imported savefile" msg to go away
     }
+
 
     @Test
     fun homepage() {
@@ -142,20 +148,64 @@ class ScreenshotsTest {
     }
 
     @Test
-    fun addPostboxView() {
+    fun addNearbyPostbox() {
         Assume.assumeTrue(run)
 
         waitAndClick(By.text("Register"))
         device.wait(Until.hasObject(By.text("Save Postbox")), 2000L)
+        assert(screenshot(device, "add_nearby_1"))
         waitAndClick(By.text("Select Postbox"))
+        assert(screenshot(device, "add_nearby_2"))
         waitAndClick(By.textContains("miles away"), 10000L)
         device.waitForIdle(5000L)
         waitAndClick(By.text("Unmarked"))
+        assert(screenshot(device, "add_nearby_3"))
         device.waitForIdle(2000L)
         waitAndClick(By.textContains("Victoria"))
         device.waitForIdle(2000L)  // let map load
         assert(screenshot(device, "${prefix}_add_postbox_view.png"))
     }
+
+    @Test
+    fun addInactivePostbox() {
+        Assume.assumeTrue(run)
+
+        waitAndClick(By.text("Register"))
+        waitAndClick(By.text("Inactive postbox"))
+        sleep(4000)
+        assert(screenshot(device, "add_inactive_1.png"))
+        waitAndClick(By.text("Select a postbox type"))
+        sleep(500)
+        assert(screenshot(device, "add_inactive_2"))
+        waitAndClick(By.textContains("Pillar"), 10000L)
+        waitAndClick(By.text("Unmarked"))
+        waitAndClick(By.textContains("Victoria"))
+        assert(screenshot(device, "add_inactive_3"))
+        waitAndClick(By.text("Save Postbox"))
+        device.waitForIdle(2000L)
+        waitAndClick(By.textStartsWith("Inactive Postbox"))
+        device.waitForIdle(2000L)
+        sleep(1000)
+        assert(screenshot(device, "add_inactive_4"))
+    }
+
+//    @Test
+//    fun addUnverifiedPostbox() {
+////        Assume.assumeTrue(run)
+//
+//        waitAndClick(By.text("Register"))
+//        waitAndClick(By.text("Select on map"))
+//        sleep(2000)
+//        assert(screenshot(device, "add_unverified_1"))
+//        waitAndClick(By.descContains("My location"))
+//        sleep(1000)
+//        waitAndClick(By.text("Select Postbox"))
+//        waitAndClick(By.textContains("miles away"), 10000L)
+//        waitAndClick(By.text("Unmarked"))
+//        waitAndClick(By.text("George V"))
+//        sleep(500)
+//        assert(screenshot(device, "add_unverified_2"))
+//    }
 
     @Test
     fun darkMode() {
@@ -179,10 +229,11 @@ class ScreenshotsTest {
 }
 
 fun screenshot(device: UiDevice, name: String): Boolean {
+    val suffix = if (name.endsWith(".png")) "" else ".png"
     return device.takeScreenshot(
         File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "pbg/$name"
+            "pbg/$name$suffix"
         )
     )
 }
