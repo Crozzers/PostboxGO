@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ ! inputs.version && env.GITHUB_REF_NAME || inputs.version }}
 
@@ -85,7 +85,7 @@ jobs:
           mv dist/app-release-signed.apk artifact/PostboxGO_$version.apk
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: app-build
           path: artifact/PostboxGO_*

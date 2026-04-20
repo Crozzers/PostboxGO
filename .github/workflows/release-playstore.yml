@@ -16,12 +16,12 @@ jobs:
     environment: release-env
     steps:
       - name: Download AAB
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: app-build
 
       - name: Download release notes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-notes
           path: whatsnew
@@ -36,6 +36,6 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.crozzers.postboxgo
           releaseFiles: ${{ github.workspace }}/PostboxGO_*.aab
-          track: ${{ inputs.track }}
+          tracks: ${{ inputs.track }}
           status: ${{ inputs.draft == true && 'draft' || 'completed' }}
           whatsNewDirectory: whatsnew/
