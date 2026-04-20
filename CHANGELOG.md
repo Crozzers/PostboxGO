@@ -1,3 +1,16 @@
+## [1.6.0] - 2026-04-20
+
+### Bug Fixes
+
+* cramped layout in landscape mode ([79937cd](https://github.com/Crozzers/PostboxGO/commit/79937cd2c0f8db979dd11c98025b1bb9c4c89fd5))
+
+
+### Features
+
+* add graph of cumulative registrations over time ([bfedf29](https://github.com/Crozzers/PostboxGO/commit/bfedf291d9a3a1c6a31b8808cb7d6bf3bb56b4df))
+* allow overriding the postbox type ([1b26029](https://github.com/Crozzers/PostboxGO/commit/1b260295e8cf34349224297e992469e20353057f))
+
+
 ## [1.5.1] - 2026-03-15
 
 ### Bug Fixes
@@ -255,3 +268,4 @@
 [1.4.3]: https://github.com/Crozzers/PostboxGO/compare/1.4.2...1.4.3
 [1.5.0]: https://github.com/Crozzers/PostboxGO/compare/1.4.3...1.5.0
 [1.5.1]: https://github.com/Crozzers/PostboxGO/compare/1.5.0...1.5.1
+[1.6.0]: https://github.com/Crozzers/PostboxGO/compare/1.5.1...1.6.0
