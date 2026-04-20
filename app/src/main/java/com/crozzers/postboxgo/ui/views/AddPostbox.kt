@@ -157,7 +157,7 @@ fun AddPostbox(
 
         Column(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(2.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -208,7 +208,7 @@ fun AddPostbox(
                     verifyPostbox(context, p)
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Button(
                 onClick = {
                     errorMessage = null
