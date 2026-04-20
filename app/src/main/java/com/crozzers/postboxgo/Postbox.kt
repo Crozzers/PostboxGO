@@ -119,7 +119,8 @@ data class Postbox(
         fun fromDetailedPostboxInfo(
             pb: DetailedPostboxInfo,
             monarch: Monarch = Monarch.NONE,
-            verified: Boolean = true
+            verified: Boolean = true,
+            typeOverride: String? = null
         ): Postbox {
             var name: String = pb.officeDetails.name
             var doubleId: String? = null
@@ -139,7 +140,7 @@ data class Postbox(
                 monarch = monarch,
                 dateRegistered = LocalDateTime.now().toString(),
                 name = name,
-                type = pb.officeDetails.address3,
+                type = typeOverride ?: pb.officeDetails.address3,
                 verified = verified,
                 inactive = pb.type.lowercase() == "inactive",
                 double = doubleId

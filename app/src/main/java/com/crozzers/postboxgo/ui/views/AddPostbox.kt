@@ -93,6 +93,7 @@ fun AddPostbox(
 
     var selectedPostbox by remember { mutableStateOf<DetailedPostboxInfo?>(null) }
     var selectedMonarch by remember { mutableStateOf(Monarch.NONE) }
+    var selectedType by remember { mutableStateOf<String?>(null) }
     var verified by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -131,7 +132,6 @@ fun AddPostbox(
             }
         }
 
-
         fun verifyPostbox(context: Context, p: DetailedPostboxInfo?) {
             // if location permission enabled, run a quick verification check in the
             // background
@@ -169,11 +169,13 @@ fun AddPostbox(
                     locationClient,
                     saveFile,
                     selectedPostbox,
-                    selectedMonarch
-                ) { p, m ->
+                    selectedMonarch,
+                    selectedType
+                ) { p, m, t ->
                     Log.d(LOG_TAG, "Nearby postbox ($p) selected with monarch $m")
                     selectedPostbox = p
                     selectedMonarch = m
+                    selectedType = t ?: p?.officeDetails?.address3
                     verified = true
                 }
 
@@ -181,11 +183,13 @@ fun AddPostbox(
                     Modifier.weight(1f),
                     saveFile,
                     selectedPostbox,
-                    selectedMonarch
-                ) { p, m ->
+                    selectedMonarch,
+                    selectedType
+                ) { p, m, t ->
                     Log.d(LOG_TAG, "Postbox ($p) selected from map with monarch $m")
                     selectedPostbox = p
                     selectedMonarch = m
+                    selectedType = t ?: p?.officeDetails?.address3
                     verified = false
                     verifyPostbox(context, p)
                 }
@@ -199,6 +203,7 @@ fun AddPostbox(
                     Log.d(LOG_TAG, "Inactive postbox ($p) selected with monarch $m")
                     selectedPostbox = p
                     selectedMonarch = m
+                    selectedType = p?.officeDetails?.address3
                     verified = false
                     verifyPostbox(context, p)
                 }
@@ -215,7 +220,8 @@ fun AddPostbox(
                         callback(
                             Postbox.fromDetailedPostboxInfo(
                                 it, selectedMonarch,
-                                verified = verified
+                                verified = verified,
+                                typeOverride = selectedType
                             )
                         )
                     }
@@ -245,7 +251,8 @@ fun AddNearbyPostbox(
     saveFile: SaveFile,
     selectedPostbox: DetailedPostboxInfo?,
     selectedMonarch: Monarch,
-    callback: (p: DetailedPostboxInfo?, m: Monarch) -> Unit
+    selectedType: String?,
+    callback: (p: DetailedPostboxInfo?, m: Monarch, t: String?) -> Unit
 ) {
     var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -279,10 +286,14 @@ fun AddNearbyPostbox(
                     selectedPostbox,
                     saveFile,
                 ) { p ->
-                    callback(p, selectedMonarch)
+                    callback(p, selectedMonarch, p.officeDetails.address3)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                SelectMonarch(selectedMonarch) { m -> callback(selectedPostbox, m) }
+                SelectMonarch(selectedMonarch) { callback(selectedPostbox, it, selectedType) }
+                Spacer(modifier = Modifier.height(16.dp))
+                SelectPostboxType(selectedType, "Override Postbox Type") {
+                    callback(selectedPostbox, selectedMonarch, it)
+                }
             }
         }
 
@@ -290,11 +301,14 @@ fun AddNearbyPostbox(
             Row(modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.fillMaxWidth(0.5f)) {
                     SelectNearbyPostbox(locationClient, selectedPostbox, saveFile) { p ->
-                        callback(p, selectedMonarch)
+                        callback(p, selectedMonarch, p.officeDetails.address3)
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    SelectMonarch(selectedMonarch) { m -> callback(selectedPostbox, m) }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    SelectMonarch(selectedMonarch) { callback(selectedPostbox, it, selectedType) }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    SelectPostboxType(selectedType, "Override Postbox Type") {
+                        callback(selectedPostbox, selectedMonarch, it)
+                    }
                 }
 
                 Spacer(Modifier.padding(8.dp))
@@ -318,7 +332,8 @@ fun AddPostboxFromMap(
     saveFile: SaveFile,
     selectedPostbox: DetailedPostboxInfo?,
     selectedMonarch: Monarch,
-    callback: (p: DetailedPostboxInfo?, m: Monarch) -> Unit
+    selectedType: String?,
+    callback: (p: DetailedPostboxInfo?, m: Monarch, t: String?) -> Unit
 ) {
     var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
     val configuration = LocalConfiguration.current
@@ -383,7 +398,7 @@ fun AddPostboxFromMap(
                     }
                 },
                 selectionCallback = { p ->
-                    callback(p, selectedMonarch)
+                    callback(p, selectedMonarch, p.officeDetails.address3)
                     // center on selected PB
                     cameraPosState.move(
                         CameraUpdateFactory.newLatLngZoom(
@@ -399,8 +414,12 @@ fun AddPostboxFromMap(
             Spacer(modifier = Modifier.height(6.dp))
             SelectMonarch(
                 selectedMonarch,
-                selectionCallback = { m -> callback(selectedPostbox, m) }
+                selectionCallback = { callback(selectedPostbox, it, selectedType) }
             )
+            Spacer(modifier = Modifier.height(6.dp))
+            SelectPostboxType(selectedType, "Override Postbox Type") {
+                callback(selectedPostbox, selectedMonarch, it)
+            }
         }
     }
 
@@ -519,6 +538,11 @@ fun AddInactivePostbox(
 
     val selectionComponent = @Composable { modifier: Modifier ->
         Column(modifier) {
+            SelectMonarch(
+                selectedMonarch,
+                selectionCallback = { m -> callback(selectedPostbox, m) }
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             SelectPostboxType(selectedPostbox?.officeDetails?.address3) {
                 var postcode = try {
                     posToUKPostcode(context, cameraPosState.position.target)
@@ -549,11 +573,6 @@ fun AddInactivePostbox(
                     selectedMonarch
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            SelectMonarch(
-                selectedMonarch,
-                selectionCallback = { m -> callback(selectedPostbox, m) }
-            )
         }
     }
 
@@ -746,6 +765,7 @@ fun SelectMonarch(selectedMonarch: Monarch, selectionCallback: (m: Monarch) -> U
 @Composable
 fun SelectPostboxType(
     selectedType: String?,
+    title: String = "Postbox Type",
     onClick: (String) -> Unit
 ) {
     var typeDropdownExpanded by remember { mutableStateOf(false) }
@@ -760,7 +780,7 @@ fun SelectPostboxType(
             value = selectedType ?: "Select a postbox type",
             onValueChange = {},
             readOnly = true,
-            label = { Text(text = "Postbox Type") },
+            label = { Text(text = title) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)

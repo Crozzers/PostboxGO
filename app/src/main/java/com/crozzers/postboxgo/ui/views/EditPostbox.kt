@@ -84,15 +84,12 @@ fun EditPostbox(
                         .height((screenHeight * 0.35).dp),
                     locationClient = locationClient
                 )
-                if (postbox.inactive) {
-                    Spacer(Modifier.height(16.dp))
-                    SelectPostboxType(selectedType) {
-                        selectedType = it
-                    }
-                }
                 Spacer(modifier = Modifier.height(16.dp))
                 SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
                 Spacer(modifier = Modifier.height(16.dp))
+                SelectPostboxType(selectedType) {
+                    selectedType = it
+                }
             }
 
             else -> {
@@ -102,12 +99,10 @@ fun EditPostbox(
                         .weight(1f)
                 ) {
                     Column(Modifier.fillMaxWidth(0.5f)) {
-                        if (postbox.inactive) {
-                            SelectPostboxType(selectedType) {
-                                selectedType = it
-                            }
-                        }
                         SelectMonarch(selectedMonarch) { m -> selectedMonarch = m }
+                        SelectPostboxType(selectedType) {
+                            selectedType = it
+                        }
                     }
                     Spacer(Modifier.padding(8.dp))
                     PostboxMap(
