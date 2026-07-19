@@ -34,9 +34,7 @@ class RoyalMailAPITest {
 
         val response = client.newCall(request).execute()
 
-        if (response.code != 200) {
-            throw Error("${response.code} - ${response.message}")
-        }
+        assert(response.code == 200) { "${response.code} - ${response.message}" }
 
         val postboxData = JsonParser.decodeFromString<List<DetailedPostboxInfo>>(response.body.string())
 
