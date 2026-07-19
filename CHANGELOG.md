@@ -1,3 +1,11 @@
+## [1.6.1] - 2026-07-19
+
+### Bug Fixes
+
+* app crashes when Royal Mail API queries fail ([6feb9f4](https://github.com/Crozzers/PostboxGO/commit/6feb9f4f3eebcd68b26f001ad10262c82a7250d2))
+* requests to Royal Mail API failing due to incorrect compression ([4985263](https://github.com/Crozzers/PostboxGO/commit/4985263a8b4976c6b3662bdee79533eb0c1dbc6f))
+
+
 ## [1.6.0] - 2026-04-20
 
 ### Bug Fixes
@@ -269,3 +277,4 @@
 [1.5.0]: https://github.com/Crozzers/PostboxGO/compare/1.4.3...1.5.0
 [1.5.1]: https://github.com/Crozzers/PostboxGO/compare/1.5.0...1.5.1
 [1.6.0]: https://github.com/Crozzers/PostboxGO/compare/1.5.1...1.6.0
+[1.6.1]: https://github.com/Crozzers/PostboxGO/compare/1.6.0...1.6.1
