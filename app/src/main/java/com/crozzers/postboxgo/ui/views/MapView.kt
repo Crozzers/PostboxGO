@@ -111,6 +111,7 @@ fun NearbyPostboxesMap(
     saveFile: SaveFile
 ) {
     val nearbyPostboxes = remember { mutableStateListOf<DetailedPostboxInfo>() }
+    val errorMsg = remember { mutableStateOf("") }
     val hasFetched = remember { mutableStateOf(false) }
     val context = LocalContext.current
     if (nearbyPostboxes.isEmpty() && !hasFetched.value) {
@@ -119,9 +120,11 @@ fun NearbyPostboxesMap(
                 Toast.makeText(context, "Failed to determine current location", Toast.LENGTH_SHORT)
                     .show()
             } else {
-                getNearbyPostboxes(context, location) { postboxes ->
+                getNearbyPostboxes(context, location) { postboxes, err ->
                     hasFetched.value = true
-                    if (postboxes != null) {
+                    if (postboxes == null) {
+                        errorMsg.value = err
+                    } else {
                         nearbyPostboxes.clear()
                         nearbyPostboxes.addAll(postboxes.filter { pb ->
                             val id = "${pb.officeDetails.postcode} ${pb.officeDetails.address1}"
@@ -131,6 +134,8 @@ fun NearbyPostboxesMap(
                 }
             }
         }
+    } else if (nearbyPostboxes.isEmpty() && errorMsg.value.isNotEmpty()) {
+        Toast.makeText(context, errorMsg.value, Toast.LENGTH_SHORT).show()
     }
     PostboxMap(
         postboxes = nearbyPostboxes.map { Postbox.fromDetailedPostboxInfo(it) },

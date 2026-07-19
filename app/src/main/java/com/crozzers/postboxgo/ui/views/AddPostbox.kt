@@ -385,9 +385,9 @@ fun AddPostboxFromMap(
                 onClick = { expanded ->
                     // load in our postboxes
                     val pos = cameraPosState.position.target
-                    getNearbyPostboxes(context, pos) { p ->
+                    getNearbyPostboxes(context, pos) { p, err ->
                         if (p == null) {
-                            loadingMsg = "Failed to get nearby postboxes"
+                            loadingMsg = err
                         } else {
                             postboxes.clear()
                             postboxes.addAll(p.filter { pb ->
@@ -654,9 +654,9 @@ fun SelectNearbyPostbox(
             Toast.makeText(context, "Failed to determine current location", Toast.LENGTH_SHORT)
                 .show()
         } else {
-            getNearbyPostboxes(context, location) { postboxes ->
+            getNearbyPostboxes(context, location) { postboxes, err ->
                 if (postboxes == null) {
-                    loadingMsg = "Failed to get nearby postboxes"
+                    loadingMsg = err
                 } else {
                     nearbyPostboxes.clear()
                     nearbyPostboxes.addAll(postboxes.filter { pb ->

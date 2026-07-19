@@ -4,7 +4,6 @@ import android.content.Context
 import android.location.Geocoder
 import android.location.Location
 import android.util.Log
-import android.widget.Toast
 import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
@@ -35,21 +34,18 @@ private val cacheFileMutex = Mutex()
 fun getNearbyPostboxes(
     context: Context,
     location: LatLng,
-    callback: (p: List<DetailedPostboxInfo>?) -> Unit
+    callback: (p: List<DetailedPostboxInfo>?, err: String) -> Unit
 ) {
     var postcode: String?
     try {
         postcode = posToUKPostcode(context, location)
     } catch (e: IllegalArgumentException) {
-        Toast.makeText(context, "Failed to determine postcode: invalid address", Toast.LENGTH_SHORT)
-            .show()
-        callback(null)
+        callback(null, "Failed to determine postcode: invalid address")
         return
     }
     if (postcode == null) {
         Log.e(LOG_TAG, "Failed to determine postcode")
-        Toast.makeText(context, "Failed to determine postcode", Toast.LENGTH_SHORT).show()
-        callback(null)
+        callback(null, "Failed to determine postcode")
         return
     }
 
@@ -57,7 +53,7 @@ fun getNearbyPostboxes(
         var postboxData: MutableList<DetailedPostboxInfo>? =
             getPostboxesFromCache(context, postcode)?.toMutableList()
         if (postboxData != null) {
-            callback(postboxData)
+            callback(postboxData, "")
             return@launch
         }
 
@@ -91,12 +87,7 @@ fun getNearbyPostboxes(
                 connect()
             } catch (e: IOException) {
                 Log.e(LOG_TAG, "failed to query to royal mail API: ${e.message}")
-                Toast.makeText(
-                    context,
-                    "Failed to query Royal Mail API: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                callback(null)
+                callback(null, "Query to Royal Mail API failed: ${e.message}")
                 return@launch
             }
 
@@ -105,12 +96,7 @@ fun getNearbyPostboxes(
                     LOG_TAG,
                     "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage"
                 )
-                Toast.makeText(
-                    context,
-                    "Error fetching nearby postboxes: query status $responseCode",
-                    Toast.LENGTH_SHORT
-                ).show()
-                callback(null)
+                callback(null, "Error fetching nearby postboxes: query status $responseCode")
                 return@launch
             }
             val doubles = mutableListOf<DetailedPostboxInfo>()
@@ -158,11 +144,10 @@ fun getNearbyPostboxes(
             postboxData.sortBy { it.locationDetails.distance }
         }
         if (postboxData?.isNotEmpty() == true) {
-            callback(postboxData)
+            callback(postboxData, "")
             cachePostboxData(context, postcode, postboxData)
         } else {
-            Toast.makeText(context, "Royal Mail API returned no results", Toast.LENGTH_SHORT).show()
-            callback(null)
+            callback(null, "Royal Mail API returned no results")
         }
         return@launch
     }
@@ -171,7 +156,7 @@ fun getNearbyPostboxes(
 fun getNearbyPostboxes(
     context: Context,
     location: Location,
-    callback: (p: List<DetailedPostboxInfo>?) -> Unit
+    callback: (p: List<DetailedPostboxInfo>?, err: String) -> Unit
 ) {
     return getNearbyPostboxes(context, LatLng(location.latitude, location.longitude), callback)
 }
