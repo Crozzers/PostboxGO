@@ -15,10 +15,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.io.File
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.Locale
 
 private const val LOG_TAG = "NearbyPostboxes"
@@ -57,93 +58,76 @@ fun getNearbyPostboxes(
             return@launch
         }
 
-        // I did ask Royal Mail if I could use their official API and they said:
-        // "...you need to be sending 150 items per day to qualify for API..."
-        // I am not sending anything, I just want access to the postbox data :(
-        val url = URL(
-            "https://www.royalmail.com/capi/rml/bf/v1/locations/branchFinder" +
-                    // for some reason setting the searchRadius at 40 yields more postboxes
-                    // even when they aren't outside that radius
-                    "?postCode=${postcode.replace(" ", "%20")}" +
-                    "&searchRadius=40&count=7" +
-                    "&officeType=postboxes&type=2&appliedFilters=null" +
-                    "&latitude=${"%.7f".format(location.latitude)}" +
-                    "&longitude=${"%.7f".format(location.longitude)}"
-        )
+        val (url, headers) = constructRMQuery(postcode, location.latitude, location.longitude)
 
-        with(url.openConnection() as HttpURLConnection) {
-            requestMethod = "GET"
-            setRequestProperty(
-                "User-Agent",
-                "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+        var builder = Request.Builder().url(url)
+        for ((key, value) in headers.entries) {
+            builder = builder.header(key, value)
+        }
+        val request = builder.build()
+        val response: Response
+        try {
+            response = OkHttpClient.Builder().build().newCall(request).execute()
+        } catch (e: IOException) {
+            Log.e(LOG_TAG, "failed to query to royal mail API: ${e.message}")
+            callback(null, "Query to Royal Mail API failed: ${e.message}")
+            return@launch
+        }
+
+        if (response.code != 200) {
+            Log.e(
+                LOG_TAG,
+                "Failed to fetch nearby postboxes for postcode $postcode: $${response.message}"
             )
-            setRequestProperty("Accept", "*/*")
-            setRequestProperty("Referer", "https://www.royalmail.com/services-near-you")
-            setRequestProperty("Sec-Fetch-Dest", "empty")
-            setRequestProperty("Sec-Fetch-Mode", "cors")
-            setRequestProperty("Sec-Fetch-Site", "same-origin")
+            callback(null, "Error fetching nearby postboxes: query status ${response.code}")
+            return@launch
+        }
 
-            try {
-                connect()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "failed to query to royal mail API: ${e.message}")
-                callback(null, "Query to Royal Mail API failed: ${e.message}")
-                return@launch
+        val doubles = mutableListOf<DetailedPostboxInfo>()
+        postboxData = JsonParser.decodeFromString<List<DetailedPostboxInfo>>(
+            response.body.string()
+        ).filter { pb ->
+            if (pb.type != "PB") {
+                return@filter false
             }
-
-            if (responseCode != 200) {
-                Log.e(
-                    LOG_TAG,
-                    "Failed to fetch nearby postboxes for postcode $postcode: $responseMessage"
+            // if it's a single then add it straight away
+            if (!pb.isDouble()) {
+                return@filter true
+            }
+            // for doubles we need to find the other half
+            // nested iteration but this list is going to be 50 items max
+            for (double in doubles) {
+                val locationResult = FloatArray(1)
+                Location.distanceBetween(
+                    pb.locationDetails.latitude.toDouble(),
+                    pb.locationDetails.longitude.toDouble(),
+                    double.locationDetails.latitude.toDouble(),
+                    double.locationDetails.longitude.toDouble(),
+                    locationResult
                 )
-                callback(null, "Error fetching nearby postboxes: query status $responseCode")
-                return@launch
-            }
-            val doubles = mutableListOf<DetailedPostboxInfo>()
-            postboxData = JsonParser.decodeFromString<List<DetailedPostboxInfo>>(
-                inputStream.bufferedReader().readText()
-            ).filter { pb ->
-                if (pb.type != "PB") {
-                    return@filter false
-                }
-                // if it's a single then add it straight away
-                if (!pb.isDouble()) {
+                if (
+                    locationResult[0] < 100 &&
+                    double.officeDetails.postcode == pb.officeDetails.postcode
+                    && double.officeDetails.name.lowercase().replace(
+                        Regex("""\([lr]\)"""),
+                        ""
+                    ) == pb.officeDetails.name.lowercase().replace(Regex("""\([lr]\)"""), "")
+                ) {
+                    doubles.remove(double)
+                    pb.double = double
                     return@filter true
                 }
-                // for doubles we need to find the other half
-                // nested iteration but this list is going to be 50 items max
-                for (double in doubles) {
-                    val locationResult = FloatArray(1)
-                    Location.distanceBetween(
-                        pb.locationDetails.latitude.toDouble(),
-                        pb.locationDetails.longitude.toDouble(),
-                        double.locationDetails.latitude.toDouble(),
-                        double.locationDetails.longitude.toDouble(),
-                        locationResult
-                    )
-                    if (
-                        locationResult[0] < 100 &&
-                        double.officeDetails.postcode == pb.officeDetails.postcode
-                        && double.officeDetails.name.lowercase().replace(
-                            Regex("""\([lr]\)"""),
-                            ""
-                        ) == pb.officeDetails.name.lowercase().replace(Regex("""\([lr]\)"""), "")
-                    ) {
-                        doubles.remove(double)
-                        pb.double = double
-                        return@filter true
-                    }
-                }
-                doubles += pb
-                return@filter false
+            }
+            doubles += pb
+            return@filter false
 
-            }.toMutableList()
-            // add the remaining double postboxes that we weren't able to match up and sort
-            // by distance from user
-            postboxData.addAll(doubles)
-            postboxData.sortBy { it.locationDetails.distance }
-        }
-        if (postboxData?.isNotEmpty() == true) {
+        }.toMutableList()
+        // add the remaining double postboxes that we weren't able to match up and sort
+        // by distance from user
+        postboxData.addAll(doubles)
+        postboxData.sortBy { it.locationDetails.distance }
+
+        if (postboxData.isNotEmpty()) {
             callback(postboxData, "")
             cachePostboxData(context, postcode, postboxData)
         } else {

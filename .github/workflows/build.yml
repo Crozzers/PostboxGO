@@ -49,6 +49,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
       - name: Build AAB
         run: ./gradlew bundleRelease
         continue-on-error: false
