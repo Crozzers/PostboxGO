@@ -8,6 +8,8 @@ import com.crozzers.postboxgo.DetailedPostboxInfo
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -44,13 +46,22 @@ fun getNearbyPostboxes(
         callback(null, "Failed to determine postcode: invalid address")
         return
     }
-    if (postcode == null) {
-        Log.e(LOG_TAG, "Failed to determine postcode")
-        callback(null, "Failed to determine postcode")
-        return
-    }
 
     CoroutineScope(Dispatchers.IO).launch {
+        // check if we were able to figure out postcode. If not, try and use any cached entries instead
+        if (postcode == null) {
+            Log.w(LOG_TAG, "Failed to determine postcode. Trying to find entries from cache...")
+            val cachedEntries = getPostboxesFromCacheByLocation(context, location).toList()
+            if (cachedEntries.isNotEmpty()) {
+                Log.i(LOG_TAG, "Found ${cachedEntries.size} cached entries")
+                callback(cachedEntries, "")
+            } else {
+                Log.e(LOG_TAG, "Failed to determine postcode or find entries in cache")
+                callback(null, "Failed to determine postcode")
+            }
+            return@launch
+        }
+
         var postboxData: MutableList<DetailedPostboxInfo>? =
             getPostboxesFromCache(context, postcode)?.toMutableList()
         if (postboxData != null) {
@@ -212,6 +223,38 @@ suspend fun getPostboxesFromCache(context: Context, postcode: String): List<Deta
     Log.i(LOG_TAG, "No cache entry found for $postcode")
 
     return null
+}
+
+fun getPostboxesFromCacheByLocation(context: Context, location: LatLng) = flow<DetailedPostboxInfo> {
+    var cachedData: Map<String, CachedPostboxDetails>
+
+    cacheFileMutex.withLock {
+        val file = File(context.filesDir, CACHE_FILE)
+        if (!file.exists()) {
+            return@flow
+        }
+        try {
+            cachedData = Json.decodeFromString<Map<String, CachedPostboxDetails>>(file.readText())
+        } catch (e: SerializationException) {
+            Log.w(LOG_TAG, "Failed to parse existing cache data", e)
+            return@flow
+        }
+    }
+
+    for (data in cachedData) {
+        if (data.value.lastFetch + CACHE_EXPIRATION_TIME < (System.currentTimeMillis() / 1000)) {
+            continue
+        }
+        val results = FloatArray(1)
+        for (postbox in data.value.postboxes) {
+            Location.distanceBetween(location.latitude, location.longitude,
+                postbox.locationDetails.latitude.toDouble(),
+                postbox.locationDetails.longitude.toDouble(), results)
+            if (results[0] < MAX_POSTBOX_VERIFIED_DISTANCE) {
+                emit(postbox)
+            }
+        }
+    }
 }
 
 /**

@@ -90,7 +90,7 @@ fun isPostboxVerified(
             it.latitude, it.longitude,
             postbox.coords.first.toDouble(), postbox.coords.second.toDouble(), results
         )
-        callback(results[0] <= 2500)
+        callback(results[0] <= MAX_POSTBOX_VERIFIED_DISTANCE)
     }
 }
 
