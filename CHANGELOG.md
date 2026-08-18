@@ -1,3 +1,10 @@
+## [1.6.2] - 2026-08-18
+
+### Bug Fixes
+
+* use cached entries when determining postcode fails ([6f19b0b](https://github.com/Crozzers/PostboxGO/commit/6f19b0b57ab934149ca90a08b16dfb8c986b079b))
+
+
 ## [1.6.1] - 2026-07-19
 
 ### Bug Fixes
@@ -278,3 +285,4 @@
 [1.5.1]: https://github.com/Crozzers/PostboxGO/compare/1.5.0...1.5.1
 [1.6.0]: https://github.com/Crozzers/PostboxGO/compare/1.5.1...1.6.0
 [1.6.1]: https://github.com/Crozzers/PostboxGO/compare/1.6.0...1.6.1
+[1.6.2]: https://github.com/Crozzers/PostboxGO/compare/1.6.1...1.6.2
