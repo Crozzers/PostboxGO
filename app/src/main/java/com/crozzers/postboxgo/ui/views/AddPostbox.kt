@@ -796,7 +796,7 @@ fun SelectPostboxType(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ) {
             listOf(
-                "Pillar", "K Type Pillar", "C Type Pillar", "Lamp Pedastal",
+                "Pillar", "K Type Pillar", "C Type Pillar", "Digital Pillar", "Lamp Pedastal",
                 "Wall Box", "Wall Box C Type", "Parcel", "Bantam N Type", "M Type"
             ).forEach { type ->
                 DropdownMenuItem(
