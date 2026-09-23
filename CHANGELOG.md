@@ -1,3 +1,11 @@
+## [1.7.0] - 2026-09-23
+
+### Features
+
+* add postbox type info popup ([286cc9f](https://github.com/Crozzers/PostboxGO/commit/286cc9f8923530e3b2cdf49c84d527b4696e39b6))
+* new icon for digital postboxes ([d6c4e5a](https://github.com/Crozzers/PostboxGO/commit/d6c4e5a95163cbbcf63083fda98ea15963d8f693))
+
+
 ## [1.6.2] - 2026-08-18
 
 ### Bug Fixes
@@ -286,3 +294,4 @@
 [1.6.0]: https://github.com/Crozzers/PostboxGO/compare/1.5.1...1.6.0
 [1.6.1]: https://github.com/Crozzers/PostboxGO/compare/1.6.0...1.6.1
 [1.6.2]: https://github.com/Crozzers/PostboxGO/compare/1.6.1...1.6.2
+[1.7.0]: https://github.com/Crozzers/PostboxGO/compare/1.6.2...1.7.0
