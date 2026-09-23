@@ -25,7 +25,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,13 +62,16 @@ import com.crozzers.postboxgo.Postbox
 import com.crozzers.postboxgo.SaveFile
 import com.crozzers.postboxgo.postboxMonarchAgeEstimate
 import com.crozzers.postboxgo.postboxTypeAgeEstimate
+import com.crozzers.postboxgo.postboxTypeTrivia
 import com.crozzers.postboxgo.ui.components.ConfirmDialog
 import com.crozzers.postboxgo.ui.components.InfoDialog
+import com.crozzers.postboxgo.ui.components.PostboxIcon
 import com.crozzers.postboxgo.ui.components.PostboxMap
 import com.crozzers.postboxgo.ui.components.getIconFromPostboxType
 import com.crozzers.postboxgo.utils.humanReadableDate
 import com.crozzers.postboxgo.utils.humanReadablePostboxAgeEstimate
 import com.crozzers.postboxgo.utils.humanReadableYearSpan
+import com.crozzers.postboxgo.utils.parsePostboxType
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
@@ -134,7 +140,9 @@ fun DetailsView(postbox: Postbox, saveFile: SaveFile, deleteCallback: () -> Unit
 
 @Composable
 fun PostboxDetails(postbox: Postbox) {
-    val showDialog = remember { mutableStateOf(false) }
+    val showAgeEstimateDialog = remember { mutableStateOf(false) }
+    val showPBTypeInfoDialog = remember { mutableStateOf(false) }
+
     Row {
         Column {
             if (!postbox.verified) {
@@ -183,11 +191,22 @@ fun PostboxDetails(postbox: Postbox) {
             }
             DetailRow("ID", idString)
             DetailRow("Registered", humanReadableDate(postbox.dateRegistered))
-            DetailRow("Type", postbox.type ?: "Unknown")
+            DetailRow("Type", postbox.type ?: "Unknown") {
+                IconButton(
+                    onClick = {
+                        showPBTypeInfoDialog.value = true
+                    },
+                    modifier = Modifier
+                        .weight(0.1f)
+                        .size(24.dp)
+                ) {
+                    Icon(Icons.Filled.Info, contentDescription = "See postbox type information")
+                }
+            }
             DetailRow("Age Estimate", humanReadablePostboxAgeEstimate(postbox.getAgeEstimate())) {
                 IconButton(
                     onClick = {
-                        showDialog.value = !showDialog.value
+                        showAgeEstimateDialog.value = !showAgeEstimateDialog.value
                     },
                     modifier = Modifier
                         .weight(0.1f)
@@ -200,32 +219,121 @@ fun PostboxDetails(postbox: Postbox) {
         }
     }
 
-    if (showDialog.value) {
-        InfoDialog(
-            title = "Age Estimate Breakdown",
-            dismissButtonText = null,
-            body = (
-                    "Postbox type: " + postbox.type +
-                            "\nService period: " + humanReadableYearSpan(
-                        postboxTypeAgeEstimate(
-                            getIconFromPostboxType(postbox.type)
-                        )
-                    ) +
-                            "\n\nMonarch: " + postbox.monarch +
-                            "\nReign: " + humanReadableYearSpan(
-                        postboxMonarchAgeEstimate(postbox.monarch)
-                    ) +
-                            "\n\nYear registered: " + try {
-                        LocalDateTime.parse(postbox.dateRegistered).year
-                    } catch (_: DateTimeParseException) {
-                        "Unknown"
-                    }
-                    )
-        ) {
-            showDialog.value = false
+    if (showAgeEstimateDialog.value) {
+        AgeEstimateDialog(postbox) {
+            showAgeEstimateDialog.value = false
+        }
+    }
+    if (showPBTypeInfoDialog.value) {
+        PBTypeDialog(postbox) {
+            showPBTypeInfoDialog.value = false
         }
     }
 }
+
+@Composable
+fun AgeEstimateDialog(postbox: Postbox, callback: () -> Unit) {
+    InfoDialog(
+        title = "Age Estimate Breakdown",
+        dismissButtonText = null,
+        body = (
+                "Postbox type: " + postbox.type +
+                        "\nService period: " + humanReadableYearSpan(
+                    postboxTypeAgeEstimate(
+                        getIconFromPostboxType(postbox.type)
+                    )
+                ) +
+                        "\n\nMonarch: " + postbox.monarch +
+                        "\nReign: " + humanReadableYearSpan(
+                    postboxMonarchAgeEstimate(postbox.monarch)
+                ) +
+                        "\n\nYear registered: " + try {
+                    LocalDateTime.parse(postbox.dateRegistered).year
+                } catch (_: DateTimeParseException) {
+                    "Unknown"
+                }
+                )
+    ) {
+        callback()
+    }
+}
+
+@Composable
+fun PBTypeDialog(postbox: Postbox, callback: () -> Unit) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    var orientation by remember { mutableIntStateOf(Configuration.ORIENTATION_PORTRAIT) }
+
+    val configuration = LocalConfiguration.current
+    LaunchedEffect(configuration) {
+        snapshotFlow { configuration.orientation }
+            .collect { orientation = it }
+    }
+
+    AlertDialog(
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = "Postbox Type Popup"
+            )
+        },
+        title = { Text("Postbox Type Information") },
+        text = {
+            @Composable
+            fun body() {
+                Text("Postbox Type: ${postbox.type}")
+                Text(
+                    "Service period: ${
+                        humanReadableYearSpan(
+                            postboxTypeAgeEstimate(
+                                getIconFromPostboxType(postbox.type)
+                            )
+                        )
+                    }"
+                )
+                val funFact = postboxTypeTrivia(parsePostboxType(postbox.type).second)
+                if (funFact != null) {
+                    Text("Fun fact: $funFact")
+                }
+            }
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                Column {
+                    body()
+                    PostboxIcon(type = postbox.type)
+                }
+            } else {
+                Row {
+                    PostboxIcon(type = postbox.type)
+                    Column { body() }
+                }
+            }
+
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    showDialog = false
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary)
+            ) {
+                Text("Ok")
+            }
+        },
+        onDismissRequest = {
+            showDialog = false
+        },
+        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+        textContentColor = MaterialTheme.colorScheme.onPrimary,
+        iconContentColor = MaterialTheme.colorScheme.onPrimary,
+    )
+
+    LaunchedEffect(showDialog) {
+        if (!showDialog) {
+            callback()
+        }
+    }
+}
+
 
 @Composable
 fun DetailRow(

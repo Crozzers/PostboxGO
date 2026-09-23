@@ -255,3 +255,14 @@ fun postboxMonarchAgeEstimate(monarch: Monarch): Pair<Int, Int?>? {
         Monarch.NONE -> null
     }
 }
+
+fun postboxTypeTrivia(type: Int?): String? {
+    return when (type) {
+        R.drawable.pillar_digital -> "Pillar postboxes started being retro-fitted after August 2025 to add a new solar-powered system for dropping off small parcels"
+        R.drawable.k_type_pillar -> "Designed by Tony Gibbs as the pillar box of the future and discontinued in 2001"
+        R.drawable.type_c -> "Introduced originally in London for increased capacity and pre-sorting by region, with one slot  labelled for \"London\" and the other \"Country\""
+        R.drawable.bantam_n_type -> "Supposed to resemble a GPO Bantam motorcycle fuel tank"
+        R.drawable.pillar_generic -> "Originally green, pillar boxes were deemed too camouflaged against the countryside, and all were repainted red after 1874."
+        else -> null
+    }
+}
